@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="app_name">Raspberry Launcher</string>
+    <string name="about">
+        Авторы: Alexander Izmailov
+
+        Сделано эксклюзивно для "Raspberry(Pi)Craft"
+    </string>
+    <string name="language">Язык</string>
+    <string name="theme">Темы</string>
+
+    <string name="light">Светлая</string>
+    <string name="light_medium">Яркая Светлая</string>
+    <string name="light_high">Контрастная Светлая</string>
+
+    <string name="dark">Темная</string>
+    <string name="dark_medium">Яркая Темная</string>
+    <string name="dark_high">Контрастная Темная</string>
+</resources>
