@@ -24,11 +24,17 @@ jobs:
       - name: Build .pkg
         run: ./gradlew packageReleasePkg
 
-      - name: Upload .pkg artifact
+      - name: Upload debug .pkg artifact
         uses: actions/upload-artifact@v4
         with:
           name: raspberry-launcher-pkg
-          path: ./build/compose/binaries/main/pkg/*.pkg
+          path: ./composeApp/build/compose/binaries/main/pkg/*.pkg
+
+      - name: Upload release .pkg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-pkg
+          path: ./composeApp/build/compose/binaries/main-release/pkg/*.pkg
 
   build-deb:
     name: Build .deb (Linux)
@@ -48,11 +54,17 @@ jobs:
       - name: Build .deb
         run: ./gradlew packageReleaseDeb
 
-      - name: Upload .deb artifact
+      - name: Upload debug .deb artifact
         uses: actions/upload-artifact@v4
         with:
           name: raspberry-launcher-deb
-          path: ./build/compose/binaries/main/deb/*.deb
+          path: ./composeApp/build/compose/binaries/main/deb/*.deb
+
+      - name: Upload release .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-deb
+          path: ./composeApp/build/compose/binaries/main-release/deb/*.deb
 
   build-msi:
     name: Build .msi (Windows)
@@ -69,8 +81,14 @@ jobs:
       - name: Build .msi
         run: ./gradlew packageReleaseMsi
 
-      - name: Upload .msi artifact
+      - name: Upload debug .msi artifact
         uses: actions/upload-artifact@v4
         with:
           name: raspberry-launcher-msi
-          path: ./build/compose/binaries/main/msi/*.msi
+          path: ./composeApp/build/compose/binaries/main/msi/*.msi
+
+      - name: Upload release .msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-msi
+          path: ./composeApp/build/compose/binaries/main-release/msi/*.msi
