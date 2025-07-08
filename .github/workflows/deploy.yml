@@ -2,9 +2,6 @@ name: Build Native Distributions
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - deploy
 
 jobs:
   build-pkg:

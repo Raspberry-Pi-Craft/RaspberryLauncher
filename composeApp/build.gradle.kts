@@ -83,7 +83,7 @@ compose.desktop {
             appResourcesRootDir = appResourcesPath.toFile()
         }
         buildTypes.release.proguard {
-            configurationFiles.from(rootDir.toPath() / "proguard-rules.pro")
+            isEnabled = false
         }
     }
 }

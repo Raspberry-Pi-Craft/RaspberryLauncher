@@ -1,6 +1,7 @@
 package ru.raspberry.launcher
 
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.application
 import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -11,6 +12,7 @@ import java.awt.Dialog
 import java.awt.FlowLayout
 import java.awt.Frame
 import java.awt.Label
+import kotlin.system.exitProcess
 
 @OptIn(ExperimentalSerializationApi::class)
 val GoodJson = Json {
@@ -22,15 +24,21 @@ val GoodJson = Json {
 
 fun main() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        Dialog(Frame(), e.message ?: "Error").apply {
+        e.printStackTrace()
+        val frame = Frame()
+        Dialog(frame, e.message ?: "Error").apply {
             layout = FlowLayout()
             val label = Label(e.message)
             add(label)
             val button = Button("OK").apply {
-                addActionListener { dispose() }
+                addActionListener {
+                    dispose()
+                    frame.dispose()
+                    exitProcess(-1)
+                }
             }
             add(button)
-            setSize(300,300)
+            setSize(300, 300)
             isVisible = true
         }
     }

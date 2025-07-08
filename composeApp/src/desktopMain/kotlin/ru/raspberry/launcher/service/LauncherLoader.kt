@@ -215,7 +215,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
             e.printStackTrace()
             // Wait 2 seconds and close
             delay(2000)
-            state.close()
+//            state.close()
         }
     }
     private fun String.runCommand(workingDir: File) {
