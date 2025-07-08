@@ -1,0 +1,87 @@
+{
+  "name": "Русский",
+  "translation": {
+    "app_name": "Raspberry Launcher",
+    "select": "Обзор...",
+
+    // Loading
+    "loading": "Загрузка...",
+    "loading.launcher": "Проверка обновлений...",
+    "loading.launcher.error": "Ошибка: %s - %s",
+    "loading.launcher.error.no_info": "Нет информации о обновлениях!",
+    "loading.launcher.success.old": "Загрузка обновления...",
+    "loading.launcher.success.actual": "Лаунчер последней версии!",
+    "loading.launcher.error.os": "Ошибка: OS не поддерживается!",
+
+    "loading.api": "Загрузка инфо об API...",
+    "loading.api.error": "Ошибка: %s - %s",
+    "loading.api.error.version": "Ошибка: Данная версия API не поддерживается!",
+    "loading.api.success": "Данные о API загружены успешно!",
+
+    "loading.account": "Загрузка аккаунтов...",
+    "loading.account.zero": "Аккаунты не найдены!",
+    "loading.account.zero.active": "Не найден активный аккаунт!",
+    "loading.account.active": "Активный аккаунт: %s",
+    "loading.account.auth.success": "Успешная аутентификация!",
+    "loading.account.auth.no_account": "Аккаунт не найден!",
+    "loading.account.auth.connection_failed": "Ошибка подключения!",
+    "loading.account.auth.invalid_credentials": "Данные неверны!",
+    "loading.account.auth.failed_to_verify": "Ошибка верификации аккаунта!",
+    "loading.account.auth.invalid": "Ошибка верификации активного аккаунта!",
+    "loading.complete": "Запуск завершен!",
+    "loading.error": "Ошибка: %s",
+
+    // Auth
+    "auth": "Аутентификация в %s",
+    "auth.username": "Имя пользователя",
+    "auth.password": "Пароль",
+    "auth.totp": "TOTP",
+    "auth.login": "Войти",
+    "auth.error.totp.enter": "Требуется ввести TOTP...",
+    "auth.error.totp.invalid": "TOTP неверен!",
+    "auth.error.credentials.invalid": "Неверен логин или пароль!",
+    "auth.error.unexpected": "Непредвиденная ошибка!",
+
+
+    "accounts": "Аккаунты",
+    "accounts.login": "Войти в %s",
+    "accounts.error.no_account": "Аккаунт не найден!",
+    "accounts.error.connection_failed": "Ошибка подключения!",
+    "accounts.error.invalid_credentials": "Данные неверны!",
+    "accounts.error.failed_to_verify": "Ошибка верификации аккаунта!",
+
+
+    "settings": "Настройки",
+    "play": "Играть",
+
+    // About
+    "settings.about": "О Программе",
+    "settings.about.content": "Авторы: Alexander Izmailov\n\n\n\n\n\n\n\nСделано эксклюзивно для \"Raspberry(Pi)Craft\"",
+
+    // Launcher
+    "settings.launcher": "Лаунчер",
+    "settings.launcher.path": "Путь к файлам лаунчера",
+    "settings.launcher.language": "Язык",
+    "settings.launcher.theme": "Тема",
+
+    // Minecraft
+    "settings.minecraft": "Майнкрафт",
+    "settings.minecraft.path": "Путь к файлам Майнкрафта",
+    "settings.minecraft.ram": "Объем выделенной памяти",
+    "settings.minecraft.width": "Ширина окна Майнкрафта",
+    "settings.minecraft.height": "Высота окна Майнкрафта",
+    "settings.minecraft.discrete": "Использовать дискретную видеокарту",
+
+    // Admin
+    "admin": "Панель администрирования",
+
+    "admin.launcher": "Лаунчер",
+    "admin.launcher.version": "Версия",
+    "admin.launcher.url": "URL для скачивания",
+    "admin.launcher.create": "Создать релиз",
+
+    "admin.users": "Пользователи",
+
+    "admin.servers": "Сервера"
+  }
+}

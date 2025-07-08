@@ -1,0 +1,88 @@
+{
+  "name": "English",
+  "translation": {
+    "app_name": "Raspberry Launcher",
+    "select": "View...",
+
+    // Loading
+    "loading": "Loading...",
+    "loading.launcher": "Checking updates...",
+    "loading.launcher.error": "Error: %s - %s",
+    "loading.launcher.error.no_info": "No info about updates!",
+    "loading.launcher.success.old": "Loading update...",
+    "loading.launcher.success.actual": "Launcher already updated!",
+    "loading.launcher.error.os": "Error: OS not supported!",
+
+    "loading.api": "Loading info about API...",
+    "loading.api.error": "Error: %s - %s",
+    "loading.api.error.version": "Error: Current version of API not supported!",
+    "loading.api.success": "Data about API successfully loaded!",
+
+    "loading.account": "Loading accounts...",
+    "loading.account.zero": "Accounts not found!",
+    "loading.account.zero.active": "Active account not found!",
+    "loading.account.active": "Active account: %s",
+    "loading.account.auth.success": "Auth successful!",
+    "loading.account.auth.no_account": "Account not found!",
+    "loading.account.auth.connection_failed": "Connection error!",
+    "loading.account.auth.invalid_credentials": "Invalid credentials!",
+    "loading.account.auth.failed_to_verify": "Account verification error!",
+    "loading.account.auth.invalid": "Active account verification error!",
+    "loading.complete": "Startup completed",
+    "loading.error": "Error: %s",
+
+    // Auth
+    "auth": "Authentication in %s",
+    "auth.username": "Username",
+    "auth.password": "Password",
+    "auth.totp": "TOTP",
+    "auth.login": "Login",
+    "auth.error.totp.enter": "Enter TOTP...",
+    "auth.error.totp.invalid": "TOTP invalid!",
+    "auth.error.credentials.invalid": "Username or password invalid!",
+    "auth.error.unexpected": "Unexpected error!",
+
+
+    "accounts": "Accounts",
+    "accounts.login": "Enter in %s",
+    "accounts.error.no_account": "Account not found!",
+    "accounts.error.connection_failed": "Connection error!",
+    "accounts.error.invalid_credentials": "Invalid credentials!",
+    "accounts.error.failed_to_verify": "Account verification error!",
+
+
+    "settings": "Settings",
+    "play": "Play",
+
+    // About
+    "settings.about": "About",
+    "settings.about.content": "Authors: Alexander Izmailov\n\n\n\n\n\n\n\nMade exclusively for \"Raspberry(Pi)Craft\"",
+
+    // Launcher
+    "settings.launcher": "Launcher",
+    "settings.launcher.path": "Launcher data path",
+    "settings.launcher.language": "Language",
+    "settings.launcher.theme": "Theme",
+
+    // Minecraft
+    "settings.minecraft": "Minecraft",
+    "settings.minecraft.path": "Minecraft path",
+    "settings.minecraft.ram": "Allocated memory",
+    "settings.minecraft.width": "Minecraft window width",
+    "settings.minecraft.height": "Minecraft window height",
+    "settings.minecraft.discrete": "Use discrete GPU",
+
+    // Admin
+    "admin": "Admin panel",
+
+    "admin.launcher": "Launcher",
+    "admin.launcher.version": "Version",
+    "admin.launcher.url": "Download URL",
+    "admin.launcher.create": "Create release",
+
+    "admin.users": "Users",
+
+    "admin.servers": "Servers",
+
+  }
+}

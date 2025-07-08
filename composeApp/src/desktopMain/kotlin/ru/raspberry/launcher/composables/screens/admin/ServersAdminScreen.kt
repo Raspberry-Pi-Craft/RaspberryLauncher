@@ -1,4 +1,4 @@
-package ru.raspberry.launcher.composables.screens.settings
+package ru.raspberry.launcher.composables.screens.admin
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,18 +14,12 @@ import ru.raspberry.launcher.windows.MainWindowScreens
 
 @Preview
 @Composable
-fun AboutSettingsScreen(state: WindowData<MainWindowScreens>) {
+fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Text(
-            fontSize = 30.sp,
-            text = state.translation("app_name", "Raspberry Launcher"),
-        )
-        Text(
-            text = state.translation("settings.about.content"),
-        )
+
     }
 }

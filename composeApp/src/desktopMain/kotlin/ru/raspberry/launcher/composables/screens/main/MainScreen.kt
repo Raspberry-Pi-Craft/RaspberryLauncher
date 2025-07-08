@@ -20,14 +20,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +54,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import raspberrylauncher.composeapp.generated.resources.Res
 import raspberrylauncher.composeapp.generated.resources.account
+import raspberrylauncher.composeapp.generated.resources.edit
+import raspberrylauncher.composeapp.generated.resources.raspberry
 import raspberrylauncher.composeapp.generated.resources.raspberry_with_bg
 import raspberrylauncher.composeapp.generated.resources.settings
 import ru.raspberry.launcher.composables.components.AppHeader
@@ -61,20 +66,22 @@ import ru.raspberry.launcher.service.GameLoader
 import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.windows.MainWindowScreens
 import ru.raspberry.launcher.windows.dialogs.AccountsDialog
+import ru.raspberry.launcher.windows.dialogs.AdminDialog
 import ru.raspberry.launcher.windows.dialogs.AuthDialog
 import ru.raspberry.launcher.windows.dialogs.SettingsDialog
-import java.util.Locale
 
 enum class DialogType {
+    Admin,
     Accounts,
     Auth,
     Settings,
+    GameError,
     None
 }
 
 val imageCache = mutableMapOf<String, ImageBitmap>()
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
@@ -83,6 +90,8 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
         state.move(WindowPosition(Alignment.Center))
     }
     var dialogType by remember { mutableStateOf(DialogType.None) }
+    val errorDialogTitle = remember { mutableStateOf<@Composable () -> Unit>({}) }
+    val errorDialogText = remember { mutableStateOf<@Composable () -> Unit>({ }) }
 
     AppTheme(
         theme = state.theme,
@@ -91,6 +100,18 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
             AppHeader<MainWindowScreens, Unit>(
                 windowData = state,
                 customActions = {
+                    if (state.adminMode) {
+                        IconButton(
+                            onClick = { dialogType = DialogType.Admin },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.edit),
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = "Open Admin Panel"
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { dialogType = DialogType.Accounts },
                         modifier = Modifier.size(32.dp)
@@ -131,10 +152,10 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     coroutine.launch {
                         val name = selectedServerName
                         if (name.isNullOrBlank()) return@launch
-                        val data = state.launcherService.getServerData(name)
+                        val data = state.launcherService.getServerData(name, state.config.language)
                         if (data == null) return@launch
                         serverDataCache.put(
-                            Pair(name, Locale.getDefault().language),
+                            Pair(name, state.config.language),
                             data
                         )
                         serverDataLoaded = true
@@ -179,7 +200,7 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     ) {
                         // Display
                         if (serverDataLoaded) {
-                            val data = serverDataCache[Pair(selectedServerName, Locale.getDefault().language)]
+                            val data = serverDataCache[Pair(selectedServerName, state.config.language)]
                             if (data != null) {
                                 Text(
                                     text = data.serverName,
@@ -216,11 +237,15 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                                 Button(
                                     onClick = {
                                         coroutine.launch {
-                                            loader.startGame()
+                                            loader.startGame(
+                                                serverName = data.serverName,
+                                                errorTitle = errorDialogTitle,
+                                                errorText = errorDialogText
+                                            )
                                         }
                                     }
                                 ) {
-                                    Text(text = "Play")
+                                    Text(text = state.translation("play", "Play"))
                                 }
 
                                 return@Column
@@ -246,50 +271,67 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                 )
             }
         }
-        if (dialogType != DialogType.None) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0, 0, 0, 64))
-            )
-            var authSystem = AuthSystem.ELY_BY
-            when (dialogType) {
-                DialogType.Accounts -> {
-                    AccountsDialog(
-                        state = state,
-                        close = { dialogType = DialogType.None },
-                        changeDialog = ({ type, data ->
-                            dialogType = type
-                            authSystem = data["authSystem"] as? AuthSystem ?: AuthSystem.ELY_BY
-                        })
-                    )
-                }
-
-                DialogType.Auth -> {
-                    AuthDialog(
-                        state = state,
-                        close = { dialogType = DialogType.None },
-                        changeDialog = ({ type, data ->
-                            dialogType = type
-                            authSystem = data["authSystem"] as? AuthSystem ?: AuthSystem.ELY_BY
-                        }),
-                        authSystem = authSystem
-                    )
-                }
-
-                DialogType.Settings ->
-                    SettingsDialog(
-                        state = state,
-                        close = { dialogType = DialogType.None },
-                        changeDialog = ({ type, data ->
-                            dialogType = type
-                            authSystem = data["authSystem"] as? AuthSystem ?: AuthSystem.ELY_BY
-
-                        }),
-                    )
-
-                DialogType.None -> Unit
+        var authSystem = AuthSystem.ELY_BY
+        var authCompleted = mutableStateOf(false)
+        when (dialogType) {
+            DialogType.Accounts -> {
+                AccountsDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                        authSystem = data["authSystem"] as AuthSystem
+                        authCompleted = data["authCompleted"] as? MutableState<Boolean> ?: mutableStateOf(false)
+                    })
+                )
             }
+
+            DialogType.Auth -> {
+                AuthDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                    authSystem = authSystem,
+                    authCompleted = authCompleted
+                )
+            }
+
+            DialogType.Settings ->
+                SettingsDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                )
+            DialogType.Admin ->
+                AdminDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                )
+
+            DialogType.GameError -> {
+                AlertDialog(
+                    onDismissRequest = { dialogType = DialogType.None },
+                    confirmButton = { dialogType = DialogType.None },
+                    dismissButton = { dialogType = DialogType.None },
+                    icon = {
+                        Image(
+                            painterResource(Res.drawable.raspberry),
+                            contentDescription = "Error Window Icon"
+                        )
+                    },
+                    title = errorDialogTitle.value,
+                    text = errorDialogText.value,
+                    tonalElevation = 8.dp
+                )
+            }
+            DialogType.None -> Unit
         }
     }
 }

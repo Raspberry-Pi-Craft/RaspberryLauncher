@@ -1,12 +1,15 @@
 package ru.raspberry.launcher
 
-import java.util.Locale
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
-enum class  Language(
-    val displayName: String,
-    val englishName: String,
-    val locale: Locale
+
+@Serializable
+data class Language(
+    val name: String,
+    val translation: Map<String, String> = emptyMap()
 ) {
-    Russian("Русский", "Russian", Locale.of("rus")),
-    English("English", "English", Locale.of("en")),
+    @Transient
+    lateinit var id: String
+    fun get(key: String, default: String) = translation.getOrDefault(key, default)
 }

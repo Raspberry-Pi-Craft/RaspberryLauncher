@@ -24,7 +24,7 @@ enum class AuthSystem(
         "https://authserver.ely.by/auth/validate",
         "https://authserver.ely.by/auth/signout",
         "https://authserver.ely.by/auth/invalidate",
-        "http://authserver.ely.by/session/join",
+        "https://authserver.ely.by/session/join",
         "http://skinsystem.ely.by/skins/%s",
         Res.drawable.ely_by
     )

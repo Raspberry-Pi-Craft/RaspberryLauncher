@@ -1,29 +1,23 @@
 package ru.raspberry.launcher.service
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.http.headers
-import io.ktor.http.isSuccess
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.reflect.typeInfo
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.auth.Account
+import ru.raspberry.launcher.models.auth.AccountMeta
 import ru.raspberry.launcher.models.auth.AccountRepository
 import ru.raspberry.launcher.models.auth.AuthSystem
 import ru.raspberry.launcher.models.dtos.ErrorDto
-import ru.raspberry.launcher.models.dtos.auth.AuthRequestDto
-import ru.raspberry.launcher.models.dtos.auth.AuthResponseDto
-import ru.raspberry.launcher.models.dtos.auth.JoinDto
-import ru.raspberry.launcher.models.dtos.auth.TokenRequestDto
-import ru.raspberry.launcher.models.dtos.auth.SignOutRequestDto
+import ru.raspberry.launcher.models.dtos.auth.*
 import kotlin.random.Random
 
 class MinecraftApiService<S>(
@@ -31,13 +25,10 @@ class MinecraftApiService<S>(
 ) {
     private val client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-            })
+            json(Json)
         }
         headers {
-            append("User-Agent", "Raspberry Launcher")
+            set(HttpHeaders.UserAgent, "Raspberry Launcher")
         }
     }
 
@@ -56,7 +47,7 @@ class MinecraftApiService<S>(
         totp: String? = null
     ): MinecraftAuthResult {
 
-        val response = state.client.post(
+        val response = client.post(
             urlString = authSystem.authUrl
         ) {
             contentType(ContentType.Application.Json)
@@ -102,7 +93,7 @@ class MinecraftApiService<S>(
     suspend fun refreshToken(
         account: Account
     ): Boolean {
-        val response = state.client.post(
+        val response = client.post(
             urlString = account.authSystem.refreshTokenUrl
         ) {
             contentType(ContentType.Application.Json)
@@ -114,7 +105,10 @@ class MinecraftApiService<S>(
         return when (response.status.value) {
             200 -> {
                 val response: AuthResponseDto = response.body()
+                val repo = AccountRepository(state.config)
+                repo.remove(account)
                 account.accessToken = response.accessToken
+                repo.add(account)
                 true
             }
             else -> false
@@ -122,7 +116,7 @@ class MinecraftApiService<S>(
     }
 
     suspend fun isTokenValid(account: Account): Boolean {
-        val response = state.client.post(
+        val response = client.post(
             urlString = account.authSystem.validateTokenUrl
         ) {
             contentType(ContentType.Application.Json)
@@ -134,7 +128,7 @@ class MinecraftApiService<S>(
     }
 
     suspend fun invalidateToken(account: Account): Boolean {
-        val response = state.client.post(
+        val response = client.post(
             urlString = account.authSystem.invalidateTokenUrl
         ) {
             contentType(ContentType.Application.Json)
@@ -151,7 +145,7 @@ class MinecraftApiService<S>(
         username: String,
         password: String
     ): Boolean {
-        val response = state.client.post(
+        val response = client.post(
             urlString = authSystem.signOutUrl
         ) {
             contentType(ContentType.Application.Json)
@@ -172,7 +166,15 @@ class MinecraftApiService<S>(
                 selectedProfile = account.id
             ))
         }
-        return response.status.isSuccess() || response.status == HttpStatusCode.Found;
+        return response.status.isSuccess()
+    }
+
+    suspend fun getSkin(account: AccountMeta): ImageBitmap {
+        val response = client.get(
+            urlString = account.skinUrl
+        )
+        val bytes: ByteArray = response.readRawBytes()
+        return bytes.decodeToImageBitmap()
     }
 
 }

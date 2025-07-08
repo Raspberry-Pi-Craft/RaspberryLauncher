@@ -3,6 +3,7 @@ package ru.raspberry.launcher.theme
 import androidx.compose.material.Colors
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -52,7 +53,7 @@ data class Theme(
     @Transient
     private val dark = darkColorScheme()
     @Transient
-    private val light = darkColorScheme()
+    private val light = lightColorScheme()
 
     val primaryColor get() = parseColor(primary, {it.primary})
     val onPrimaryColor get() = parseColor(onPrimary, {it.onPrimary})
@@ -134,6 +135,13 @@ data class Theme(
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun parseColor(string: String? = null, selector: (ColorScheme) -> Color): Color {
-        return if (string != null) Color(string.hexToLong()) else if (isDark) selector(dark) else selector(light)
+        return if (string != null)
+            Color(
+                string.replace("#", "").hexToLong()
+            )
+        else if (isDark)
+            selector(dark)
+        else
+            selector(light)
     }
 }

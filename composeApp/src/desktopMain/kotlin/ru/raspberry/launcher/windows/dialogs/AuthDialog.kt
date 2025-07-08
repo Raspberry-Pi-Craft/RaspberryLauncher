@@ -1,11 +1,21 @@
 package ru.raspberry.launcher.windows.dialogs
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
@@ -16,6 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
@@ -34,26 +45,42 @@ import ru.raspberry.launcher.models.auth.AccountRepository
 import ru.raspberry.launcher.models.auth.AuthSystem
 import ru.raspberry.launcher.service.MinecraftApiService
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthDialog(
     state: WindowData<MainWindowScreens>,
     close: () -> Unit,
     changeDialog: (DialogType, Map<String, Any>) -> Unit,
-    authSystem: AuthSystem
+    authSystem: AuthSystem,
+    authCompleted: MutableState<Boolean>,
 ) {
-    val windowState = rememberDialogState(position = WindowPosition(Alignment.Center))
+    val windowState = rememberDialogState(
+        position = WindowPosition(Alignment.Center)
+    )
     val dialogData = remember {
         DialogData(
             parent = state,
             dialogState = windowState,
             currentScreen = mutableStateOf(Unit),
             close = close,
-            title = "Authentication ${authSystem.displayName}"
+            title = state.translation("auth", "Authentication in %s")
+                .format(authSystem.displayName)
         )
     }
+    val repository = remember {
+        AccountRepository(config = state.config)
+    }
+    val coroutineScope = rememberCoroutineScope()
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var totp by remember { mutableStateOf("") }
+    val totpRequested: MutableState<Boolean> = remember {
+        mutableStateOf(false)
+    }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     DialogWindow(
         onCloseRequest = close,
-        state = rememberDialogState(position = WindowPosition(Alignment.Center)),
+        state = windowState,
         undecorated = true,
         resizable = false
     ) {
@@ -65,29 +92,30 @@ fun AuthDialog(
                 AppHeader(
                     dialogData = dialogData
                 )
-            }
+            },
+            tonalElevation = 8.dp,
+            shadowElevation = 16.dp,
         ) {
-            Column {
-                val repository = remember {
-                    AccountRepository(config = state.config)
+            val scrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .scrollable(scrollState, Orientation.Vertical),
+            ) {
+                AnimatedVisibility(
+                    visible = errorMessage != null,
+                ) {
+                    Text(
+                        text = errorMessage ?: "",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
-                val coroutineScope = rememberCoroutineScope()
-                var username by remember { mutableStateOf("") }
-                var password by remember { mutableStateOf("") }
-                var totp by remember { mutableStateOf("") }
-                val totpRequested: MutableState<Boolean> = remember {
-                    mutableStateOf(false)
-                }
-                var errorMessage by remember { mutableStateOf("") }
-                Text(
-                    text = errorMessage,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(0.5f)
-                        .padding(10.dp),
-                    color = Color.Red
-                )
                 TextField(
                     value = username,
                     onValueChange = {
@@ -95,14 +123,13 @@ fun AuthDialog(
                     },
                     singleLine = true,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .padding(10.dp),
+                        .weight(2f)
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(8.dp),
                     label = {
                         Text(
-                            text = "Username",
-                            modifier = Modifier.fillMaxSize()
+                            text = state.translation("auth.username", "Username")
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -118,14 +145,13 @@ fun AuthDialog(
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .padding(10.dp),
+                        .weight(2f)
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(8.dp),
                     label = {
                         Text(
-                            text = "Password",
-                            modifier = Modifier.fillMaxSize()
+                            text = state.translation("auth.password", "Password")
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -141,14 +167,13 @@ fun AuthDialog(
                         },
                         singleLine = true,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                            .padding(10.dp),
+                            .weight(2f)
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                         shape = RoundedCornerShape(8.dp),
                         label = {
                             Text(
-                                text = "TOTP",
-                                modifier = Modifier.fillMaxSize()
+                                text = state.translation("auth.totp", "TOTP")
                             )
                         }
                     )
@@ -165,36 +190,47 @@ fun AuthDialog(
                             )) {
                                 MinecraftApiService.MinecraftAuthResult.RequestedTOTP -> {
                                     totpRequested.value = true
-                                    errorMessage = "TOTP is required for this account."
-                                    async { delay(1000); errorMessage = "" }
+                                    errorMessage = state.translation("auth.error.totp.enter",
+                                        "TOTP is required for this account.")
+                                    async { delay(1000); errorMessage = null }
                                 }
 
                                 MinecraftApiService.MinecraftAuthResult.InvalidTOTP -> {
-                                    errorMessage = "Invalid TOTP."
-                                    async { delay(1000); errorMessage = "" }
+                                    errorMessage = state.translation("auth.error.totp.invalid",
+                                        "Invalid TOTP!")
+                                    async { delay(1000); errorMessage = null }
                                 }
 
                                 MinecraftApiService.MinecraftAuthResult.InvalidCredentials -> {
-                                    errorMessage = "Invalid username or password."
-                                    async { delay(1000); errorMessage = "" }
+                                    errorMessage = state.translation("auth.error.credentials.invalid",
+                                        "Invalid username or password!")
+                                    async { delay(1000); errorMessage = null }
                                 }
 
                                 MinecraftApiService.MinecraftAuthResult.UnexpectedError -> {
-                                    errorMessage = "Unexpected error!"
-                                    async { delay(1000); errorMessage = "" }
+                                    errorMessage = state.translation("auth.error.unexpected",
+                                        "Unexpected error!")
+                                    async { delay(1000); errorMessage = null }
                                 }
 
-                                MinecraftApiService.MinecraftAuthResult.Successful ->
+                                MinecraftApiService.MinecraftAuthResult.Successful -> {
+                                    authCompleted.value = true
                                     changeDialog(DialogType.Accounts, mapOf())
+                                    totpRequested.value = false
+                                }
                             }
                         }
                     },
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .weight(1f)
-                        .padding(20.dp),
+                        .padding(end = 8.dp, start = 16.dp),
                     content = {
-                        Text("Login")
+                        Text(
+                            text = state.translation("auth.login", "Login"),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     },
                 )
             }

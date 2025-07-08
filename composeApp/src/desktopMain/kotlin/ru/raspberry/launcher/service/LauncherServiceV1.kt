@@ -1,10 +1,10 @@
 package ru.raspberry.launcher.service
 
-import com.sun.security.ntlm.Server
 import io.ktor.client.*
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -12,23 +12,21 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.ServerData
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.dtos.auth.JoinDto
-import java.util.Locale
+import ru.raspberry.launcher.models.dtos.LauncherInfoDto
+import ru.raspberry.launcher.models.dtos.ServerFile
+import ru.raspberry.launcher.models.dtos.auth.AdminInfoDto
 
 class LauncherServiceV1<S>(
         private val state: WindowData<S>
 ) {
 
     private var token: String? = null
-    private val client = HttpClient(OkHttp) {
+    private var client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-            })
+            json(Json)
         }
         headers {
-            append("User-Agent", "Raspberry Launcher")
+            set(HttpHeaders.UserAgent, "Raspberry Launcher")
         }
     }
 
@@ -42,12 +40,14 @@ class LauncherServiceV1<S>(
     suspend fun auth(): LauncherAuthResult {
         val account = state.activeAccount
         if (account == null) return LauncherAuthResult.NoAccount
-        client.config {
-            headers {
-                remove("Authorization")
+        client = client.config {
+            defaultRequest {
+                headers {
+                    remove(HttpHeaders.Authorization)
+                }
             }
         }
-
+        state.minecraftService.refreshToken(account)
 
         var response = client.get(
             urlString = "${state.config.host}/api/v1/auth/id?username=${account.username}",
@@ -61,10 +61,23 @@ class LauncherServiceV1<S>(
         return when (response.status) {
             HttpStatusCode.OK -> {
                 token = response.bodyAsText().replace("\"", "")
-                client.config {
-                    headers {
-                        append("Authorization", "Bearer $token")
+                client = client.config {
+                    defaultRequest {
+                        headers {
+                            set(HttpHeaders.Authorization, "Bearer $token")
+                        }
                     }
+                }
+
+                val response = client.get(urlString = "${state.config.host}/api/v1/admin/info")
+                if (response.status.isSuccess()) {
+                    val adminInfo: AdminInfoDto = response.body()
+                    state.isAccountAdmin = adminInfo.isAdmin
+                    state.adminMode = false
+                }
+                else {
+                    state.isAccountAdmin = false
+                    state.adminMode = false
                 }
                 LauncherAuthResult.Success
             }
@@ -82,11 +95,30 @@ class LauncherServiceV1<S>(
         return response.body()
     }
 
-    suspend fun getServerData(serverName: String) : ServerData? {
+    suspend fun getServerData(serverName: String, locale: String) : ServerData? {
         val response = client.get(
-            urlString = "${state.config.host}/api/v1/server/list?serverName=${serverName}&locale=${Locale.getDefault().language}"
+            urlString = "${state.config.host}/api/v1/server/data?serverName=${serverName}&locale=${locale}"
         )
         if (!response.status.isSuccess()) return null
         return response.body()
+    }
+
+    suspend fun getFiles(serverName: String) : List<ServerFile>? {
+        val response = client.get(
+            urlString = "${state.config.host}/api/v1/server/files?serverName=${serverName}&side=client"
+        )
+        if (!response.status.isSuccess()) return null
+        return response.body()
+    }
+
+
+    suspend fun releaseNewLauncherVersion(dto: LauncherInfoDto) : HttpResponse {
+        val response = client.patch(
+            urlString = "${state.config.host}/api/v1/admin/config/launcher"
+        ) {
+            contentType(ContentType.Application.Json)
+            setBody(dto)
+        }
+        return response
     }
 }

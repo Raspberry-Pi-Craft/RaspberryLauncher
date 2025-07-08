@@ -53,8 +53,7 @@ fun MinecraftSettingsScreen(
                 shape = RoundedCornerShape(8.dp),
                 label = {
                     Text(
-                        text = "Minecraft Path",
-                        modifier = Modifier.fillMaxSize()
+                        text = state.translation("settings.minecraft.path", "Minecraft Path")
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -78,7 +77,7 @@ fun MinecraftSettingsScreen(
                         .width(120.dp)
                         .padding(8.dp)
                 ) {
-                    Text(text = "Select...")
+                    Text(text = state.translation("select", "Select..."))
                 }
             }
         }
@@ -97,8 +96,7 @@ fun MinecraftSettingsScreen(
             shape = RoundedCornerShape(8.dp),
             label = {
                 Text(
-                    text = "Minecraft Memory Limit",
-                    modifier = Modifier.fillMaxSize()
+                    text = state.translation("settings.minecraft.ram", "Minecraft Memory Limit")
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -127,8 +125,7 @@ fun MinecraftSettingsScreen(
                 shape = RoundedCornerShape(8.dp),
                 label = {
                     Text(
-                        text = "Minecraft Window Width",
-                        modifier = Modifier.fillMaxSize()
+                        text = state.translation("settings.minecraft.width", "Minecraft Window Width")
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -153,8 +150,7 @@ fun MinecraftSettingsScreen(
                 shape = RoundedCornerShape(8.dp),
                 label = {
                     Text(
-                        text = "Minecraft Window Height",
-                        modifier = Modifier.fillMaxSize()
+                        text = state.translation("settings.minecraft.height", "Minecraft Window Height")
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -167,7 +163,7 @@ fun MinecraftSettingsScreen(
             modifier = Modifier.height(70.dp)
         ) {
             Text(
-                text = "Use Discrete GPU",
+                text = state.translation("settings.minecraft.discrete", "Use Discrete GPU"),
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f)

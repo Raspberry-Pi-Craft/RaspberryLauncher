@@ -49,7 +49,7 @@ class AccountRepository {
         cache.clear()
         cache.addAll(Json.decodeFromString<List<Account>>(String(data, Charsets.UTF_8)))
     }
-    private fun save() {
+    fun save() {
         var data = Json.encodeToString(cache)
 
         val iv = ByteArray(16).apply { SecureRandom().nextBytes(this) }
