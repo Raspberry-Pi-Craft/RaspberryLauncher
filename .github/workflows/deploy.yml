@@ -1,0 +1,70 @@
+name: Build Native Distributions
+
+on:
+  pull_request:
+    branches:
+      - deploy
+
+jobs:
+  build-pkg:
+    name: Build .pkg (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build .pkg
+        run: ./gradlew packageReleasePkg
+
+      - name: Upload .pkg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-pkg
+          path: ./build/compose/binaries/main/pkg/*.pkg
+
+  build-deb:
+    name: Build .deb (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build .deb
+        run: ./gradlew packageReleaseDeb
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-deb
+          path: ./build/compose/binaries/main/deb/*.deb
+
+  build-msi:
+    name: Build .msi (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build .msi
+        run: ./gradlew packageReleaseMsi
+
+      - name: Upload .msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-launcher-msi
+          path: ./build/compose/binaries/main/msi/*.msi

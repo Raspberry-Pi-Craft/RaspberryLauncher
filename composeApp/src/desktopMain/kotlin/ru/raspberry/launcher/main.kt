@@ -1,19 +1,16 @@
 package ru.raspberry.launcher
 
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.windows.MainWindow
+import java.awt.Button
+import java.awt.Dialog
+import java.awt.FlowLayout
+import java.awt.Frame
+import java.awt.Label
 
 @OptIn(ExperimentalSerializationApi::class)
 val GoodJson = Json {
@@ -23,8 +20,23 @@ val GoodJson = Json {
     allowTrailingComma = true
 }
 
-fun main() = application {
-    MainWindow(
-        close = ::exitApplication
-    )
+fun main() {
+    Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        Dialog(Frame(), e.message ?: "Error").apply {
+            layout = FlowLayout()
+            val label = Label(e.message)
+            add(label)
+            val button = Button("OK").apply {
+                addActionListener { dispose() }
+            }
+            add(button)
+            setSize(300,300)
+            isVisible = true
+        }
+    }
+    application {
+        MainWindow(
+            close = ::exitApplication
+        )
+    }
 }

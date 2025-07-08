@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import kotlin.io.path.div
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import kotlin.text.set
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -80,6 +81,9 @@ compose.desktop {
                 iconFile.set(project.layout.projectDirectory.file("icons/icon.png"))
             }
             appResourcesRootDir = appResourcesPath.toFile()
+        }
+        buildTypes.release.proguard {
+            configurationFiles.from(rootDir.toPath() / "proguard-rules.pro")
         }
     }
 }
