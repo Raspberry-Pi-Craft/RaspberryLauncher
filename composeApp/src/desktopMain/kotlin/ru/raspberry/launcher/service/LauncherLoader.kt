@@ -134,7 +134,6 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                 }
             }
 
-
             value = 0.7f
             text.value = state.translation("loading.account", "Loading accounts...")
             val repo = AccountRepository(
@@ -215,7 +214,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
             e.printStackTrace()
             // Wait 2 seconds and close
             delay(2000)
-//            state.close()
+            state.close()
         }
     }
     private fun String.runCommand(workingDir: File) {
