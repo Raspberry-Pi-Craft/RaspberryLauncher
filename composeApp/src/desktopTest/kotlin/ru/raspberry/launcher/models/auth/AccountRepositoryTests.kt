@@ -1,13 +1,11 @@
 package ru.raspberry.launcher.models.auth
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import ru.raspberry.launcher.models.Config
+import ru.raspberry.launcher.models.users.auth.Account
+import ru.raspberry.launcher.models.users.auth.AccountRepository
 import java.nio.file.Files
-import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class AccountRepositoryTests {

@@ -7,14 +7,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.Language
-import ru.raspberry.launcher.models.auth.Account
-import ru.raspberry.launcher.models.dtos.LauncherInfoDto
+import ru.raspberry.launcher.models.users.auth.Account
+import ru.raspberry.launcher.models.dtos.LauncherInfo
 import ru.raspberry.launcher.service.LauncherServiceV1
 import ru.raspberry.launcher.service.MinecraftApiService
 import ru.raspberry.launcher.theme.Theme
@@ -34,7 +29,7 @@ data class WindowData<S>(
     var isAccountAdmin: Boolean = false,
     var adminMode: Boolean = false,
 ) {
-    var launcherInfo: LauncherInfoDto? = null
+    var launcherInfo: LauncherInfo? = null
 
     val theme: Theme
         get() = themes[config.theme] ?: Theme("Default", true)

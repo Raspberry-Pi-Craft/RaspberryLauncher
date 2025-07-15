@@ -3,71 +3,57 @@ package ru.raspberry.launcher.composables.screens.main
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowScope
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.HttpHeaders
+import io.ktor.http.headers
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import raspberrylauncher.composeapp.generated.resources.Res
-import raspberrylauncher.composeapp.generated.resources.account
-import raspberrylauncher.composeapp.generated.resources.edit
-import raspberrylauncher.composeapp.generated.resources.raspberry
-import raspberrylauncher.composeapp.generated.resources.raspberry_with_bg
-import raspberrylauncher.composeapp.generated.resources.settings
+import raspberrylauncher.composeapp.generated.resources.*
 import ru.raspberry.launcher.composables.components.AppHeader
-import ru.raspberry.launcher.models.ServerData
+import ru.raspberry.launcher.models.server.BasicServerData
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.auth.AuthSystem
+import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.service.GameLoader
 import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.windows.MainWindowScreens
 import ru.raspberry.launcher.windows.dialogs.AccountsDialog
 import ru.raspberry.launcher.windows.dialogs.AdminDialog
 import ru.raspberry.launcher.windows.dialogs.AuthDialog
+import ru.raspberry.launcher.windows.dialogs.EditServerDialog
+import ru.raspberry.launcher.windows.dialogs.RemoveApproval
 import ru.raspberry.launcher.windows.dialogs.SettingsDialog
 
 enum class DialogType {
@@ -76,9 +62,18 @@ enum class DialogType {
     Auth,
     Settings,
     GameError,
-    None
+    None,
+    EditServer,
+    RemoveServer
 }
-
+private var client = HttpClient(OkHttp) {
+    install(ContentNegotiation) {
+        json(Json)
+    }
+    headers {
+        set(HttpHeaders.UserAgent, "Raspberry Launcher")
+    }
+}
 val imageCache = mutableMapOf<String, ImageBitmap>()
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -92,6 +87,7 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
     var dialogType by remember { mutableStateOf(DialogType.None) }
     val errorDialogTitle = remember { mutableStateOf<@Composable () -> Unit>({}) }
     val errorDialogText = remember { mutableStateOf<@Composable () -> Unit>({ }) }
+    var selectedServerName by remember { mutableStateOf<String?>(null) }
 
     AppTheme(
         theme = state.theme,
@@ -143,17 +139,43 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
             Row(
                 modifier = Modifier.weight(1f),
             ) { // Content
-                val serverDataCache = remember { mutableMapOf<Pair<String, String>, ServerData>() }
-                var selectedServerName by remember { mutableStateOf<String?>(null) }
+                val serverDataCache = remember { mutableMapOf<Pair<String, String>, BasicServerData>() }
                 var serverDataLoaded by remember { mutableStateOf(false) }
                 fun selectServer(name: String) {
                     selectedServerName = name
                     serverDataLoaded = false
                     coroutine.launch {
                         val name = selectedServerName
-                        if (name.isNullOrBlank()) return@launch
-                        val data = state.launcherService.getServerData(name, state.config.language)
-                        if (data == null) return@launch
+                        if (name.isNullOrBlank()) {
+                            errorDialogTitle.value = {
+                                Text(text = "Server loading error!")
+                            }
+                            errorDialogText.value = {
+                                Text(text = "Server name is empty or null!")
+                            }
+                            return@launch
+                        }
+                        var data = state.launcherService.getServerInfo(name, state.config.language)
+                        if (data == null) {
+                            errorDialogTitle.value = {
+                                Text(text = "Server loading error!")
+                            }
+                            errorDialogText.value = {
+                                Text(text = "Server data is null for server: $name")
+                            }
+                            return@launch
+                        }
+                        if (data.description == null)
+                            data = state.launcherService.getServerInfo(name)
+                        if (data == null) {
+                            errorDialogTitle.value = {
+                                Text(text = "Server loading error!")
+                            }
+                            errorDialogText.value = {
+                                Text(text = "Server data is null for server: $name")
+                            }
+                            return@launch
+                        }
                         serverDataCache.put(
                             Pair(name, state.config.language),
                             data
@@ -164,30 +186,59 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
 
                 val servers = remember {
                     runBlocking {
-                        val names = state.launcherService.getServerNames()
-                        names
+                        state.launcherService.getServers()
                     }
                 }
-                val scrollState = rememberScrollState()
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(3f)
-                        .scrollable(scrollState, Orientation.Vertical)
+                        .weight(4f)
                 ) {
                     items(servers) { name ->
-                        Button(
-                            onClick = {
-                                selectServer(name)
-                            },
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(70.dp)
+                                .clickable {
+                                    selectServer(name)
+                                }
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.tertiaryContainer),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = name)
+                            Text(text = name, modifier = Modifier.padding(start = 8.dp))
+                            Spacer(modifier = Modifier.weight(1f))
+                            if (state.adminMode) {
+                                IconButton(
+                                    onClick = {
+                                        selectServer(name)
+                                        dialogType = DialogType.EditServer
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.edit),
+                                        contentDescription = "Edit Server",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        selectServer(name)
+                                        dialogType = DialogType.RemoveServer
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.close),
+                                        contentDescription = "Edit Server",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
+
 
                 AnimatedVisibility(
                     visible = selectedServerName != null,
@@ -196,16 +247,14 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         .weight(2f)
                         .background(MaterialTheme.colorScheme.secondaryContainer)
                 ) {
-                    Column(
-                    ) {
+                    Divider()
+                    Column (
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ){
                         // Display
                         if (serverDataLoaded) {
                             val data = serverDataCache[Pair(selectedServerName, state.config.language)]
                             if (data != null) {
-                                Text(
-                                    text = data.serverName,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
                                 val serverImage = painterResource(Res.drawable.raspberry_with_bg)
                                 var painter by remember {
                                     val image = imageCache.getOrDefault(data.imageUrl, null)
@@ -219,26 +268,46 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                                             )
                                     )
                                 }
+                                remember {
+                                    coroutine.launch {
+                                        if (data.imageUrl == null) return@launch
+                                        val response = client.get(urlString = data.imageUrl)
+                                        val bytes: ByteArray = response.readRawBytes()
+                                        val image = bytes.decodeToImageBitmap()
+                                        imageCache.put(data.imageUrl, image)
+                                        painter = BitmapPainter(
+                                            image = image,
+                                            filterQuality = FilterQuality.None
+                                        )
+                                    }
+                                }
                                 Image(
                                     painter = painter,
-                                    contentDescription = "${data.serverName} Icon",
+                                    contentDescription = "${data.name} Icon",
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .aspectRatio(1f)
                                 )
-                                val scrollState = rememberScrollState()
                                 Text(
-                                    text = data.description,
+                                    text = data.name,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    fontSize = 25.sp,
+                                    textAlign = TextAlign.Center,
+                                )
+                                Divider(thickness = 2.dp)
+                                val descriptionScrollState = rememberScrollState()
+                                Text(
+                                    text = data.description ?: "",
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(1f)
-                                        .scrollable(scrollState, Orientation.Vertical)
+                                        .verticalScroll(descriptionScrollState)
                                 )
                                 Button(
                                     onClick = {
                                         coroutine.launch {
-                                            loader.startGame(
-                                                serverName = data.serverName,
+                                            loader.start(
+                                                serverName = data.name,
                                                 errorTitle = errorDialogTitle,
                                                 errorText = errorDialogText
                                             )
@@ -329,6 +398,31 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     title = errorDialogTitle.value,
                     text = errorDialogText.value,
                     tonalElevation = 8.dp
+                )
+            }
+            DialogType.EditServer ->
+                EditServerDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                    serverName = selectedServerName!!,
+                )
+            DialogType.RemoveServer -> {
+                errorDialogTitle.value = {
+                    Text(text = state.translation("admin.remove_server.failed_title", "Remove Server Error"))
+                }
+                errorDialogText.value = {
+                    Text(text = state.translation("admin.remove_server.failed_text", "Failed to remove server."))
+                }
+                RemoveApproval(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                    serverName = selectedServerName!!,
                 )
             }
             DialogType.None -> Unit

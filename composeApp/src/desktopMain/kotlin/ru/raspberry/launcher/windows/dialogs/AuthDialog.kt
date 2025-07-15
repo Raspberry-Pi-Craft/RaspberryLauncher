@@ -3,47 +3,35 @@ package ru.raspberry.launcher.windows.dialogs
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import ru.raspberry.launcher.composables.components.AppHeader
-import ru.raspberry.launcher.models.DialogData
-import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.theme.AppTheme
-import ru.raspberry.launcher.tools.roundCorners
-import ru.raspberry.launcher.windows.MainWindowScreens
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.raspberry.launcher.composables.components.AppHeader
 import ru.raspberry.launcher.composables.screens.main.DialogType
-import ru.raspberry.launcher.models.auth.AccountRepository
-import ru.raspberry.launcher.models.auth.AuthSystem
+import ru.raspberry.launcher.models.DialogData
+import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.service.MinecraftApiService
+import ru.raspberry.launcher.theme.AppTheme
+import ru.raspberry.launcher.tools.roundCorners
+import ru.raspberry.launcher.windows.MainWindowScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,6 +164,14 @@ fun AuthDialog(
                                 text = state.translation("auth.totp", "TOTP")
                             )
                         }
+                    )
+                }
+                else {
+                    Spacer(
+                        modifier = Modifier
+                            .weight(2f)
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                     )
                 }
                 Button(

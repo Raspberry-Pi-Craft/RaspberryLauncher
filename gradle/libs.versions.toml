@@ -8,6 +8,7 @@ kotlinx-coroutines = "1.10.2"
 ktor = "3.2.0"
 buildKonfig = "0.17.1"
 kotlinx-datetime = "0.7.1"
+knbt = "0.11.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -21,7 +22,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-
+benwoodworth-knbt = { module = "net.benwoodworth.knbt:knbt", version.ref = "knbt" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

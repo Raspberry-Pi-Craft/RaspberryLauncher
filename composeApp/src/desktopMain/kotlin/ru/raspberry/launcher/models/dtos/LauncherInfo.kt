@@ -3,9 +3,8 @@ package ru.raspberry.launcher.models.dtos
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApiInfoDto(
+data class LauncherInfo(
     val version: String,
-    val apiVersion: String,
-    val description: String,
-    val documentationUrl: String
+    val downloadUrl: String,
+    val lastUpdated: String
 )

@@ -1,4 +1,4 @@
-package ru.raspberry.launcher.composables.screens.admin
+package ru.raspberry.launcher.composables.screens.edit_server
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -11,12 +11,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -38,18 +41,28 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import raspberrylauncher.composeapp.generated.resources.Res
 import raspberrylauncher.composeapp.generated.resources.chevron_right
+import ru.raspberry.launcher.composables.components.Spinner
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.java.JavaData
+import ru.raspberry.launcher.models.server.ServerChanges
 import ru.raspberry.launcher.windows.MainWindowScreens
 
-
+private var client = HttpClient(OkHttp) {
+    install(ContentNegotiation) {
+        json(Json)
+    }
+    headers {
+        set(HttpHeaders.UserAgent, "Raspberry Launcher")
+    }
+}
 @Preview
 @Composable
-fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
+fun ChangeServerDataScreen(state: WindowData<MainWindowScreens>, serverName: String) {
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -58,7 +71,8 @@ fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
             .verticalScroll(scrollState),
     ) {
         val coroutine = rememberCoroutineScope()
-        var serverName by remember { mutableStateOf("") }
+        var newServerName by remember { mutableStateOf("") }
+        var description by remember { mutableStateOf("") }
         var serverAddress by remember { mutableStateOf("") }
         var serverImageUrl by remember { mutableStateOf("") }
         var javaName by remember { mutableStateOf("") }
@@ -82,11 +96,39 @@ fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
                 modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth()
             )
         }
+        var selectedLanguage by remember { mutableStateOf(state.language.id) }
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+        ){
+            Text(
+                text = "Server: $serverName",
+            )
+            Spacer(Modifier.weight(1f))
+            Spinner(
+                label = state.translation("settings.launcher.language", "Language"),
+                options = state.languages.values.toList(),
+                selectedOption = state.languages.keys.toList().indexOf(selectedLanguage),
+                toText = { it?.name ?: "No languages selected" },
+                onOptionSelected = { selected ->
+                    selectedLanguage = selected.id
+                },
+                modifier = Modifier.fillMaxWidth().padding(4.dp),
+            )
+        }
+        Divider()
         TextField(
-            value = serverName,
-            onValueChange = { serverName = it },
+            value = newServerName,
+            onValueChange = { newServerName = it },
             label = {
-                Text("Server Name")
+                Text("New Server Name")
+            },
+            modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
+        )
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = {
+                Text("Description")
             },
             modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
         )
@@ -100,7 +142,7 @@ fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
         )
         TextField(
             value = serverImageUrl,
-            onValueChange = { serverImageUrl = it },
+            onValueChange = { serverImageUrl = it},
             label = {
                 Text("Server Image URL")
             },
@@ -301,25 +343,30 @@ fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
         Button(
             onClick = {
                 coroutine.launch {
-                    val response = state.launcherService.createServer(
+                    val response = state.launcherService.updateServer(
                         serverName = serverName,
-                        serverAddress = serverAddress,
-                        imageUrl = serverImageUrl.ifEmpty { null },
-                        java = JavaData(
-                            name = javaName,
-                            version = javaVersion,
-                            windowsDownloadUrl = windowsJavaUrl,
-                            windowsExecutablePath = windowsExecutablePath,
-                            linuxDownloadUrl = linuxJavaUrl,
-                            linuxExecutablePath = linuxExecutablePath,
-                            macosDownloadUrl = macosJavaUrl,
-                            macosExecutablePath = macosExecutablePath,
-                        )
+                        serverData = ServerChanges(
+                            name = newServerName.ifBlank { null },
+                            address = serverAddress.ifBlank { null },
+                            imageUrl = serverImageUrl.ifBlank { null },
+                            description = description.ifBlank { null },
+                            java = JavaData(
+                                name = javaName.ifBlank { null },
+                                version = javaVersion.ifBlank { null },
+                                windowsDownloadUrl = windowsJavaUrl.ifBlank { null },
+                                windowsExecutablePath = windowsExecutablePath.ifBlank { null },
+                                linuxDownloadUrl = linuxJavaUrl.ifBlank { null },
+                                linuxExecutablePath = linuxExecutablePath.ifBlank { null },
+                                macosDownloadUrl = macosJavaUrl.ifBlank { null },
+                                macosExecutablePath = macosExecutablePath.ifBlank { null },
+                            )
+                        ),
+                        locale = selectedLanguage
                     )
                     errorMsg = !response.status.isSuccess()
                     message = response.bodyAsText()
                     async {
-                        delay(2000)
+                        delay(2000);
                         message = null
                         delay(2000)
                         if (!errorMsg) state.recompose()
@@ -327,8 +374,8 @@ fun ServersAdminScreen(state: WindowData<MainWindowScreens>) {
                 }
             },
             modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
-        ) {
-            Text("Create Server")
+        ){
+            Text("Change Data")
         }
     }
 }

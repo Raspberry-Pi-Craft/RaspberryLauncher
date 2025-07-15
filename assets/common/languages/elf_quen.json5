@@ -1,0 +1,75 @@
+{
+  "name": "Quenya",
+  "translation": {
+    "app_name": "Raspberry Launcher",
+    "select": "Cenya...",
+    // "View..." — дословно "посмотреть"
+
+    "loading": "Naiquetë...",
+    // Loading... — "Нагрузка", "Ожидание"
+    "loading.launcher": "Hyara úvë rámar...",
+    // Checking updates — "Проверка новых рук"
+    "loading.launcher.error": "Náruva: %s - %s",
+    "loading.launcher.error.no_info": "Úva hlarë órenyallo!",
+    // No info about updates — "Нет новостей об обновлениях"
+    "loading.launcher.success.old": "Naiquetë ná hyaranwa...",
+    // Loading update — "Загружаю обновление"
+    "loading.launcher.success.actual": "Hyaranwa ná ve úvë!",
+    // Launcher already updated
+    "loading.launcher.error.os": "Náruva: Valar noita!",
+    // OS not supported — "ОС не поддерживается"
+
+    "loading.api": "Naiquetë órenyallo API...",
+    "loading.api.error": "Náruva: %s - %s",
+    "loading.api.error.version": "Náruva: Nierna API no hlarë!",
+    "loading.api.success": "Órenyallo API ná ve caure!",
+    "loading.account": "Naiquetë hírië...",
+    "loading.account.zero": "Hírië úvë hlarë!",
+    "loading.account.zero.active": "Hírië harna úvë hlarë!",
+    "loading.account.active": "Hírië harna: %s",
+    "loading.account.auth.success": "Nairë caure!",
+    "loading.account.auth.no_account": "Hírië úvë hlarë!",
+    "loading.account.auth.connection_failed": "Násë lúmë úvë hlarë!",
+    "loading.account.auth.invalid_credentials": "Nierna ar cuila úvë hlarë!",
+    "loading.account.auth.failed_to_verify": "Náruva: Hírië cuilë úvë hlarë!",
+    "loading.account.auth.invalid": "Náruva: Hírië harna cuilë úvë hlarë!",
+    "loading.complete": "Eärendil órë ná carë",
+    "loading.error": "Náruva: %s",
+    "auth": "Hyara cuilë %s",
+    "auth.username": "Nierna",
+    "auth.password": "Látië",
+    "auth.totp": "TOTP",
+    "auth.login": "Laita",
+    "auth.error.totp.enter": "Enta TOTP...",
+    "auth.error.totp.invalid": "TOTP úvë hlarë!",
+    "auth.error.credentials.invalid": "Nierna ar látië úvë hlarë!",
+    "auth.error.unexpected": "Náruva úvë hlarë!",
+    "accounts": "Hírië",
+    "accounts.login": "Laita mi %s",
+    "accounts.error.no_account": "Hírië úvë hlarë!",
+    "accounts.error.connection_failed": "Násë lúmë úvë hlarë!",
+    "accounts.error.invalid_credentials": "Nierna ar látië úvë hlarë!",
+    "accounts.error.failed_to_verify": "Náruva: Hírië cuilë úvë hlarë!",
+    "settings": "Sérë",
+    "play": "Laita",
+    "settings.about": "Quenta",
+    "settings.about.content": "Lantarë: Alexander Izmailov\n\nNai elenion ancalima \"Raspberry(Pi)Craft\"-on.",
+    "settings.launcher": "Hyaranwa",
+    "settings.launcher.path": "Hyaranwa nárea",
+    "settings.launcher.language": "Lambë",
+    "settings.launcher.theme": "Lóte",
+    "settings.minecraft": "Minecraft",
+    "settings.minecraft.path": "Minecraft nárea",
+    "settings.minecraft.ram": "Máya ondo",
+    "settings.minecraft.width": "Minecraft lëa rëa",
+    "settings.minecraft.height": "Minecraft hinta rëa",
+    "settings.minecraft.discrete": "Carnë súre mácina",
+    "admin": "Rimba nárië",
+    "admin.launcher": "Hyaranwa",
+    "admin.launcher.version": "Ramba",
+    "admin.launcher.url": "Yána corma",
+    "admin.launcher.create": "Carë i nárië",
+    "admin.users": "Nísë",
+    "admin.servers": "Carnilossë"
+  }
+}

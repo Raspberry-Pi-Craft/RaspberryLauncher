@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
@@ -28,10 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -40,8 +35,8 @@ import ru.raspberry.launcher.composables.screens.main.DialogType
 import ru.raspberry.launcher.composables.screens.main.imageCache
 import ru.raspberry.launcher.models.DialogData
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.auth.AccountRepository
-import ru.raspberry.launcher.models.auth.AuthSystem
+import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.service.LauncherServiceV1
 import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.tools.roundCorners

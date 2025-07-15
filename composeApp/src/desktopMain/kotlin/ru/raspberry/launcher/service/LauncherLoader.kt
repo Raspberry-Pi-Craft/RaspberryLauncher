@@ -19,9 +19,10 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.AppConfig
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.auth.AccountRepository
-import ru.raspberry.launcher.models.dtos.ApiInfoDto
-import ru.raspberry.launcher.models.dtos.LauncherInfoDto
+import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.models.dtos.ApiInfo
+import ru.raspberry.launcher.models.dtos.LauncherInfo
+import ru.raspberry.launcher.tools.runCommand
 import ru.raspberry.launcher.windows.MainWindowScreens
 import java.io.File
 import java.nio.file.Files
@@ -40,6 +41,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
         headers {
             set(HttpHeaders.UserAgent, "Raspberry Launcher")
         }
+        followRedirects = true
     }
     val progress: Float
         get () = value
@@ -60,7 +62,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                         .format(response.status, response.bodyAsText())
             } else {
                 value = 0.25f
-                val info = response.body<LauncherInfoDto>()
+                val info = response.body<LauncherInfo>()
                 state.launcherInfo = info
                 if (info.version != AppConfig.version) {
                     text.value = state.translation("loading.launcher.success.old", "Loading update...")
@@ -102,7 +104,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                     dir.mkdirs()
                     val file = dir.resolve("RaspberryLauncher$format")
                     file.writeBytes(response.readRawBytes())
-                    command.runCommand(dir)
+                    command.runCommand(dir, 10, TimeUnit.MINUTES)
                     exitProcess(0)
                 }
                 else
@@ -118,7 +120,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                 text.value = state.translation("loading.api.error","Error: %s - %s")
                     .format(response.status, response.bodyAsText())
             } else {
-                val info = response.body<ApiInfoDto>()
+                val info = response.body<ApiInfo>()
                 if (info.apiVersion !in supportedApis) {
                     value = 1f
                     text.value = state.translation("loading.api.error.version",
@@ -216,13 +218,5 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
             delay(2000)
             state.close()
         }
-    }
-    private fun String.runCommand(workingDir: File) {
-        ProcessBuilder(*split(" ").toTypedArray())
-            .directory(workingDir)
-            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
-            .start()
-            .waitFor(60, TimeUnit.MINUTES)
     }
 }

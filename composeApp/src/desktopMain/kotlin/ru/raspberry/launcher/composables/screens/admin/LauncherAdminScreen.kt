@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -19,7 +21,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.raspberry.launcher.AppConfig
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.dtos.LauncherInfoDto
+import ru.raspberry.launcher.models.dtos.LauncherInfo
 import ru.raspberry.launcher.windows.MainWindowScreens
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -35,14 +37,15 @@ fun LauncherAdminScreen(state: WindowData<MainWindowScreens>) {
     ) {
         var version by remember { mutableStateOf(state.launcherInfo?.version ?: AppConfig.version) }
         var downloadUrl by remember { mutableStateOf(state.launcherInfo?.downloadUrl ?: "") }
-        var error by remember { mutableStateOf<String?>(null) }
         val coroutine = rememberCoroutineScope()
+        var message by remember { mutableStateOf<String?>(null) }
+        var errorMsg by remember { mutableStateOf(true) }
         AnimatedVisibility(
-            visible = error != null,
+            visible = message != null,
         ) {
             Text(
-                text = error ?: "",
-                color = MaterialTheme.colorScheme.error,
+                text = message ?: "",
+                color = if (errorMsg) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -82,8 +85,12 @@ fun LauncherAdminScreen(state: WindowData<MainWindowScreens>) {
         )
         Button(
             onClick = {
-                if (downloadUrl.isEmpty()) return@Button
-                val info = LauncherInfoDto(
+                if (downloadUrl.isEmpty()) {
+                    errorMsg = true
+                    message = "Empty download URL"
+                    return@Button
+                }
+                val info = LauncherInfo(
                     version = version,
                     downloadUrl = downloadUrl,
                     lastUpdated = LocalDateTime.Formats.ISO.format(
@@ -94,8 +101,13 @@ fun LauncherAdminScreen(state: WindowData<MainWindowScreens>) {
                     val response = state.launcherService.releaseNewLauncherVersion(info)
                     if (response.status.isSuccess()) {
                         state.launcherInfo = info
+                        message = response.bodyAsText()
+                        errorMsg = false
+                        async { delay(2000); message = null }
                     } else {
-                        error = response.bodyAsText()
+                        message = response.bodyAsText()
+                        errorMsg = true
+                        async { delay(2000); message = null }
                     }
                 }
             },

@@ -12,11 +12,11 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.auth.Account
-import ru.raspberry.launcher.models.auth.AccountMeta
-import ru.raspberry.launcher.models.auth.AccountRepository
-import ru.raspberry.launcher.models.auth.AuthSystem
-import ru.raspberry.launcher.models.dtos.ErrorDto
+import ru.raspberry.launcher.models.users.auth.Account
+import ru.raspberry.launcher.models.users.auth.AccountMeta
+import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.models.users.auth.AuthSystem
+import ru.raspberry.launcher.models.dtos.Error
 import ru.raspberry.launcher.models.dtos.auth.*
 import kotlin.random.Random
 
@@ -30,6 +30,7 @@ class MinecraftApiService<S>(
         headers {
             set(HttpHeaders.UserAgent, "Raspberry Launcher")
         }
+        followRedirects = true
     }
 
     enum class MinecraftAuthResult {
@@ -51,7 +52,7 @@ class MinecraftApiService<S>(
             urlString = authSystem.authUrl
         ) {
             contentType(ContentType.Application.Json)
-            setBody(AuthRequestDto(
+            setBody(AuthRequest(
                 username = username,
                 password = if (totp != null) "$password:$totp" else password,
                 clientToken = Random.nextBytes(32).joinToString("") { "%02x".format(it) },
@@ -59,7 +60,7 @@ class MinecraftApiService<S>(
         }
         when (response.status.value) {
             401 -> {
-                val dto: ErrorDto = response.body()
+                val dto: Error = response.body()
                 when (dto.errorMessage) {
                     "Account protected with two factor auth." -> {
                         return MinecraftAuthResult.RequestedTOTP
@@ -74,7 +75,7 @@ class MinecraftApiService<S>(
                 }
             }
             200 -> {
-                val account: AuthResponseDto = response.body()
+                val account: AuthResponse = response.body()
                 repository.add(Account(
                     authSystem = authSystem,
                     id = account.selectedProfile.id,
@@ -97,14 +98,14 @@ class MinecraftApiService<S>(
             urlString = account.authSystem.refreshTokenUrl
         ) {
             contentType(ContentType.Application.Json)
-            setBody(TokenRequestDto(
+            setBody(TokenRequest(
                 accessToken = account.accessToken,
                 clientToken = account.clientToken,
             ))
         }
         return when (response.status.value) {
             200 -> {
-                val response: AuthResponseDto = response.body()
+                val response: AuthResponse = response.body()
                 val repo = AccountRepository(state.config)
                 repo.remove(account)
                 account.accessToken = response.accessToken
@@ -120,7 +121,7 @@ class MinecraftApiService<S>(
             urlString = account.authSystem.validateTokenUrl
         ) {
             contentType(ContentType.Application.Json)
-            setBody(TokenRequestDto(
+            setBody(TokenRequest(
                 accessToken = account.accessToken
             ))
         }
@@ -132,7 +133,7 @@ class MinecraftApiService<S>(
             urlString = account.authSystem.invalidateTokenUrl
         ) {
             contentType(ContentType.Application.Json)
-            setBody(TokenRequestDto(
+            setBody(TokenRequest(
                 accessToken = account.accessToken,
                 clientToken = account.clientToken,
             ))
@@ -149,7 +150,7 @@ class MinecraftApiService<S>(
             urlString = authSystem.signOutUrl
         ) {
             contentType(ContentType.Application.Json)
-            setBody(SignOutRequestDto(
+            setBody(SignOutRequest(
                     username = username,
                     password = password,
                 ))
@@ -160,7 +161,7 @@ class MinecraftApiService<S>(
     suspend fun join(account: Account, serverId: String): Boolean {
         val response = client.post(account.authSystem.joinUrl) {
             contentType(ContentType.Application.Json)
-            setBody(JoinDto(
+            setBody(Join(
                 accessToken = account.accessToken,
                 serverId = serverId,
                 selectedProfile = account.id

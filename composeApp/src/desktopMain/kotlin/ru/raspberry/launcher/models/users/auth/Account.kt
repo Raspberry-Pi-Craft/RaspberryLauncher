@@ -1,4 +1,4 @@
-package ru.raspberry.launcher.models.auth
+package ru.raspberry.launcher.models.users.auth
 
 import kotlinx.serialization.Serializable
 import kotlin.random.Random

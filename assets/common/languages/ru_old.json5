@@ -1,0 +1,79 @@
+{
+  "name": "Русскій дореволюціонный",
+  "translation": {
+    "app_name": "Распберрі Запускатель",
+    "select": "Изборъ...",
+
+    "loading": "Загруженіе...",
+    "loading.launcher": "Проверка обновленій...",
+    "loading.launcher.error": "Ошибка: %s — %s",
+    "loading.launcher.error.no_info": "Нѣтъ свѣденій о обновленіяхъ!",
+    "loading.launcher.success.old": "Загруженіе обновленія...",
+    "loading.launcher.success.actual": "Запускательъ новѣйшаго образца!",
+    "loading.launcher.error.os": "Ошибка: Операционная система не поддерживается!",
+
+    "loading.api": "Загруженіе свѣденій о программномъ интерфейсѣ...",
+    "loading.api.error": "Ошибка: %s — %s",
+    "loading.api.error.version": "Ошибка: Сія версия программнаго интерфейса не поддерживается!",
+    "loading.api.success": "Данные о программномъ интерфейсѣ благополучно загружены!",
+
+    "loading.account": "Загруженіе учетныхъ записей...",
+    "loading.account.zero": "Учетныхъ записей не обрѣтено!",
+    "loading.account.zero.active": "Активная учетная запись не найдена!",
+    "loading.account.active": "Активная учетная запись: %s",
+    "loading.account.auth.success": "Аутентификація успешна!",
+    "loading.account.auth.no_account": "Учетная запись не обрѣтена!",
+    "loading.account.auth.connection_failed": "Ошибка соединенія!",
+    "loading.account.auth.invalid_credentials": "Неправильныя данные!",
+    "loading.account.auth.failed_to_verify": "Ошибка вѣрѣфикаціи учетной записи!",
+    "loading.account.auth.invalid": "Ошибка вѣрѣфикаціи активной учетной записи!",
+    "loading.complete": "Запускъ оконченъ!",
+    "loading.error": "Ошибка: %s",
+
+    "auth": "Аутентификація въ %s",
+    "auth.username": "Имя пользова́теля",
+    "auth.password": "Пароль",
+    "auth.totp": "Временный кодъ (TOTP)",
+    "auth.login": "Войти",
+    "auth.error.totp.enter": "Нужно ввести временный кодъ...",
+    "auth.error.totp.invalid": "Временный кодъ неверенъ!",
+    "auth.error.credentials.invalid": "Логинъ или пароль неверны!",
+    "auth.error.unexpected": "Непредвиденная ошибка!",
+
+    "accounts": "Учетныя записи",
+    "accounts.login": "Войти въ %s",
+    "accounts.error.no_account": "Учетная запись не обрѣтена!",
+    "accounts.error.connection_failed": "Ошибка соединенія!",
+    "accounts.error.invalid_credentials": "Неправильныя данные!",
+    "accounts.error.failed_to_verify": "Ошибка вѣрѣфикаціи учетной записи!",
+
+    "settings": "Настроѣнія",
+    "play": "Играть",
+
+    "settings.about": "О Программѣ",
+    "settings.about.content": "Авторы: Александръ Измайловъ\n\n\n\n\n\n\n\nСдѣлано исклѣчительно для «Raspberry(Pi)Craft»",
+
+    "settings.launcher": "Запускатель программъ",
+    "settings.launcher.path": "Путь къ файламъ запускателя",
+    "settings.launcher.language": "Языкъ",
+    "settings.launcher.theme": "Тема",
+
+    "settings.minecraft": "Майнкрафтъ",
+    "settings.minecraft.path": "Путь къ файламъ Майнкрафта",
+    "settings.minecraft.ram": "Объемъ отведенной памяти",
+    "settings.minecraft.width": "Ширина окна Майнкрафта",
+    "settings.minecraft.height": "Высота окна Майнкрафта",
+    "settings.minecraft.discrete": "Употреблять дискретную видеокарту",
+
+    "admin": "Панель управленія",
+
+    "admin.launcher": "Запускатель программъ",
+    "admin.launcher.version": "Изданіе",
+    "admin.launcher.url": "URL для скачиванія",
+    "admin.launcher.create": "Создать выпускъ",
+
+    "admin.users": "Пользователи",
+
+    "admin.servers": "Служебныя машины"
+  }
+}

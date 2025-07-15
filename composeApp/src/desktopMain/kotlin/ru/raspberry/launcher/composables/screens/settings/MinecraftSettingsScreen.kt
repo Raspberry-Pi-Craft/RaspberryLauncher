@@ -74,7 +74,7 @@ fun MinecraftSettingsScreen(
                     },
                     modifier = Modifier
                         .fillMaxHeight()
-                        .width(120.dp)
+                        .width(150.dp)
                         .padding(8.dp)
                 ) {
                     Text(text = state.translation("select", "Select..."))

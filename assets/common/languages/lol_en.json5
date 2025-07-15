@@ -1,0 +1,87 @@
+{
+  "name": "LOLCAT",
+  "translation": {
+    "app_name": "Rasburry Launchur",
+    "select": "pickz...",
+
+    // Loading
+    "loading": "Loadin... pls wait",
+    "loading.launcher": "Sniffin 4 upd8z...",
+    "loading.launcher.error": "oh noes: %s - %s",
+    "loading.launcher.error.no_info": "WUT? no infoz bout upd8z?! :(",
+    "loading.launcher.success.old": "Got da shiny new upd8, yay! :3",
+    "loading.launcher.success.actual": "Launchur iz already shiny & new!",
+    "loading.launcher.error.os": "oh noes: OS nawt supported :c",
+
+    "loading.api": "Summonin magik dataz... abracadabra!",
+    "loading.api.error": "oh noes: %s - %s",
+    "loading.api.error.version": "WUT? magik vershun nawt supported! D:",
+    "loading.api.success": "Magik wurks! sparklez~",
+
+    "loading.account": "Diggin up accountz...",
+    "loading.account.zero": "No accountz found! who haz eaten dem? :c",
+    "loading.account.zero.active": "Wher ur active account?",
+    "loading.account.active": "Active account: %s",
+    "loading.account.auth.success": "Auth gud! ヽ(・∀・)ﾉ",
+    "loading.account.auth.no_account": "Oh noes! Account nawt found! ;_;",
+    "loading.account.auth.connection_failed": "Connection go splat! rip :(",
+    "loading.account.auth.invalid_credentials": "bad creds! u has typo? :o",
+    "loading.account.auth.failed_to_verify": "could not verify account :c",
+    "loading.account.auth.invalid": "Active account sayz nope! D:",
+    "loading.complete": "All dun! yay! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "loading.error": "oh noes: %s",
+
+    // Auth
+    "auth": "login in %s",
+    "auth.username": "Usernem",
+    "auth.password": "Passwurd",
+    "auth.totp": "TOTP magik",
+    "auth.login": "Login nao!",
+    "auth.error.totp.enter": "plz enter da TOTP! kthx",
+    "auth.error.totp.invalid": "TOTP iz wrong! >:(",
+    "auth.error.credentials.invalid": "bad usernem or passwurd!",
+    "auth.error.unexpected": "OMG unexpected errur! :o",
+
+
+    "accounts": "Accountz",
+    "accounts.login": "Login 2 %s",
+    "accounts.error.no_account": "Account nawt found!",
+    "accounts.error.connection_failed": "cant haz connection! :(",
+    "accounts.error.invalid_credentials": "bad creds!",
+    "accounts.error.failed_to_verify": "couldn't verify! maybe hamster chewed cable?",
+
+
+    "settings": "Settingz",
+    "play": "Play nao! :3",
+
+    // About
+    "settings.about": "Aboutz",
+    "settings.about.content": "Auturz: Alexander Izmailov\n\n\n\n\n\n\n\nMade 4 fun in \"Raspberry(Pi)Craft\" owo",
+
+    // Launcher
+    "settings.launcher": "Launchur stuf",
+    "settings.launcher.path": "Path 2 launchur hoard",
+    "settings.launcher.language": "Langwidge",
+    "settings.launcher.theme": "Themez n sparklez",
+
+    // Minecraft
+    "settings.minecraft": "Minecraft",
+    "settings.minecraft.path": "Where Minecraft sleepz",
+    "settings.minecraft.ram": "How many RAM nomz",
+    "settings.minecraft.width": "Window width (big screen go brrr)",
+    "settings.minecraft.height": "Minecraft height",
+    "settings.minecraft.discrete": "Use powah GPU! pew pew!",
+
+    // Admin
+    "admin": "Admin panelz oOo",
+
+    "admin.launcher": "Launchur stuf",
+    "admin.launcher.version": "Vershun",
+    "admin.launcher.url": "Downloadz URL",
+    "admin.launcher.create": "Make nu releez",
+
+    "admin.users": "Users",
+
+    "admin.servers": "Servers",
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "name": "Sindarin",
+  "translation": {
+    "app_name": "Raspberry Launcher",
+    "select": "Cenithar...",  // View...
+
+    "loading": "Tolo...",  // Loading...
+    "loading.launcher": "Gwedhiel i daid...",  // Checking updates...
+    "loading.launcher.error": "Gurth: %s - %s",
+    "loading.launcher.error.no_info": "Ú-adan i daid!",
+    "loading.launcher.success.old": "Tolo i daid...",
+    "loading.launcher.success.actual": "I hyaranwa na annad!",
+    "loading.launcher.error.os": "Gurth: No i adar natha!",
+
+    "loading.api": "Tolo dan i API...",
+    "loading.api.error": "Gurth: %s - %s",
+    "loading.api.error.version": "Gurth: I veriad en API ú-natha!",
+    "loading.api.success": "Dan i API aníron athrad!",
+
+    "loading.account": "Tolo hain...",
+    "loading.account.zero": "Hain ú-adan!",
+    "loading.account.zero.active": "Hain gwannad ú-adan!",
+    "loading.account.active": "Hain gwannad: %s",
+    "loading.account.auth.success": "Athrad achen!",
+    "loading.account.auth.no_account": "Hain ú-adan!",
+    "loading.account.auth.connection_failed": "Rhaw achen!",
+    "loading.account.auth.invalid_credentials": "Nathron a thîr ú-chebin!",
+    "loading.account.auth.failed_to_verify": "Gurth: Ú-bedith hain!",
+    "loading.account.auth.invalid": "Gurth: Ú-bedith hain gwannad!",
+    "loading.complete": "Cerin ennas",
+    "loading.error": "Gurth: %s",
+
+    "auth": "Athrad mi %s",
+    "auth.username": "Nîf",
+    "auth.password": "Rhaw",
+    "auth.totp": "TOTP",
+    "auth.login": "Ladad",
+    "auth.error.totp.enter": "Pant TOTP...",
+    "auth.error.totp.invalid": "TOTP ú-bedith!",
+    "auth.error.credentials.invalid": "Nîf a rhaw ú-chebin!",
+    "auth.error.unexpected": "Gurth ú-chadad!",
+
+    "accounts": "Hain",
+    "accounts.login": "Ladad mi %s",
+    "accounts.error.no_account": "Hain ú-adan!",
+    "accounts.error.connection_failed": "Rhaw achen!",
+    "accounts.error.invalid_credentials": "Nathron a thîr ú-chebin!",
+    "accounts.error.failed_to_verify": "Gurth: Ú-bedith hain!",
+
+    "settings": "Lachd",
+    "play": "Ladad",
+
+    "settings.about": "Pedid",
+    "settings.about.content": "Crëad: Alexander Izmailov\n\nEvedui i \"Raspberry(Pi)Craft\"",
+
+    "settings.launcher": "Hyaranwa",
+    "settings.launcher.path": "Naid hyaranwa",
+    "settings.launcher.language": "Lad",
+    "settings.launcher.theme": "Gwaith",
+
+    "settings.minecraft": "Minecraft",
+    "settings.minecraft.path": "Naid Minecraft",
+    "settings.minecraft.ram": "Rham dû",
+    "settings.minecraft.width": "Lin Minecraft",
+    "settings.minecraft.height": "Taur Minecraft",
+    "settings.minecraft.discrete": "Tolo gwannad súr",
+
+    "admin": "Gwaith rimba",
+
+    "admin.launcher": "Hyaranwa",
+    "admin.launcher.version": "Thangail",
+    "admin.launcher.url": "Thanc corma",
+    "admin.launcher.create": "Carad aníron",
+
+    "admin.users": "Edair",
+
+    "admin.servers": "Carnilossë"
+  }
+ }

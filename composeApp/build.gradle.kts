@@ -16,7 +16,11 @@ val appResourcesPath = rootDir.toPath() / "assets"
 
 kotlin {
     jvm("desktop")
-    
+    repositories {
+        mavenCentral()
+        google()
+        maven("https://jitpack.io")
+    }
     sourceSets {
         val desktopMain by getting
         
@@ -41,6 +45,7 @@ kotlin {
             implementation("io.github.vinceglb:filekit-dialogs-compose:0.10.0-beta04")
             implementation("io.github.vinceglb:filekit-coil:0.10.0-beta04")
             implementation(libs.kotlinx.datetime)
+            implementation(libs.benwoodworth.knbt)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -55,8 +60,7 @@ kotlin {
 val appVersion = "1.0.0"
 buildkonfig {
     packageName = "ru.raspberry.launcher"
-     objectName = "AppConfig"
-    // exposeObjectWithName = "YourAwesomePublicConfig"
+    objectName = "AppConfig"
 
     defaultConfigs {
         buildConfigField(STRING, "version", appVersion)

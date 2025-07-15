@@ -1,0 +1,85 @@
+{
+  "name": "Русский-Мемный (Все вопросы к GPT)",
+  "translation": {
+    "app_name": "Расбери Лаунчур",
+    "select": "Щёлкни тут...",
+
+    // Loading
+    "loading": "Грузимся... подожди-подожди!",
+    "loading.launcher": "Ищем обновы...",
+    "loading.launcher.error": "Ой-ой, баг: %s - %s",
+    "loading.launcher.error.no_info": "Обновы? Их нету! :(",
+    "loading.launcher.success.old": "Опа, обновочка прилетела! :3",
+    "loading.launcher.success.actual": "Лаунчер и так свежий как огурчик!",
+    "loading.launcher.error.os": "А вот твоя ОС не катит, увы :с",
+
+    "loading.api": "Копаемся в API... магия на подходе!",
+    "loading.api.error": "Ой-ей, ошибка: %s - %s",
+    "loading.api.error.version": "Эй, API не дружит с этой версией! D:",
+    "loading.api.success": "API жив-здоров, данные получены!",
+
+    "loading.account": "Копаемся в акках...",
+    "loading.account.zero": "Акков нет! Где они?! :(",
+    "loading.account.zero.active": "Активный акк куда-то спрятался!",
+    "loading.account.active": "В деле акк: %s",
+    "loading.account.auth.success": "Успешный вход! ヽ(・∀・)ﾉ",
+    "loading.account.auth.no_account": "Эээ, такого акка нет! ;_;",
+    "loading.account.auth.connection_failed": "Связь порвалась, не фортануло :(",
+    "loading.account.auth.invalid_credentials": "Ай-ай, неверный логин или пароль!",
+    "loading.account.auth.failed_to_verify": "Не смогли проверить акк :с",
+    "loading.account.auth.invalid": "Активный акк отказал! >:(",
+    "loading.complete": "Всё готово! Погнали! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "loading.error": "Беда: %s",
+
+    // Auth
+    "auth": "Вход в %s",
+    "auth.username": "Имя (ну ты понял)",
+    "auth.password": "Пароль (секретик)",
+    "auth.totp": "Магический TOTP",
+    "auth.login": "Войти, жми!",
+    "auth.error.totp.enter": "Введи TOTP, не тяни!",
+    "auth.error.totp.invalid": "TOTP фейлится! >_<",
+    "auth.error.credentials.invalid": "Логин/пароль - ошибка!",
+    "auth.error.unexpected": "Ой, что-то сломалось...",
+
+    "accounts": "Акки всякие",
+    "accounts.login": "Войти в %s",
+    "accounts.error.no_account": "Акк не найден!",
+    "accounts.error.connection_failed": "Связь пропала!",
+    "accounts.error.invalid_credentials": "Крякозябры в логине/пароле!",
+    "accounts.error.failed_to_verify": "Проверка акка провалилась!",
+
+    "settings": "Настройки-шмасторйки",
+    "play": "Играть!!! :3",
+
+    // About
+    "settings.about": "О приложении",
+    "settings.about.content": "Автор: Александр Измайлов\n\n\n\n\n\n\n\nСделано для веселья в \"Raspberry(Pi)Craft\" uwu",
+
+    // Launcher
+    "settings.launcher": "Лаунчерные штучки",
+    "settings.launcher.path": "Путь к лаунчеру",
+    "settings.launcher.language": "Язык интерфейса",
+    "settings.launcher.theme": "Тема",
+
+    // Minecraft
+    "settings.minecraft": "Майнкрафт",
+    "settings.minecraft.path": "Где спит Майнкрафт",
+    "settings.minecraft.ram": "Сколько памяти хавать",
+    "settings.minecraft.width": "Ширина окна",
+    "settings.minecraft.height": "Высота окна",
+    "settings.minecraft.discrete": "Юзать мощную видюху!",
+
+    // Admin
+    "admin": "Админская панелька",
+
+    "admin.launcher": "Лаунчер-дела",
+    "admin.launcher.version": "Версия",
+    "admin.launcher.url": "Ссылка на загрузку",
+    "admin.launcher.create": "Запилить новый релиз",
+
+    "admin.users": "Юзеры",
+
+    "admin.servers": "Сервера"
+  }
+}
