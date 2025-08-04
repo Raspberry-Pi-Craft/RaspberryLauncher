@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 enum class OS {
     Windows,
     Linux,
-    MacOS
+    OSX,
+    Unknown
 }

@@ -10,6 +10,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.readRawBytes
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.users.auth.Account
@@ -20,12 +21,16 @@ import ru.raspberry.launcher.models.dtos.Error
 import ru.raspberry.launcher.models.dtos.auth.*
 import kotlin.random.Random
 
-class MinecraftApiService<S>(
-    private val state: WindowData<S>
+class MinecraftApiService(
+    private val repository: AccountRepository
 ) {
+    @OptIn(ExperimentalSerializationApi::class)
     private val client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
-            json(Json)
+            json(Json{
+
+                decodeEnumsCaseInsensitive = true
+            })
         }
         headers {
             set(HttpHeaders.UserAgent, "Raspberry Launcher")
@@ -106,10 +111,9 @@ class MinecraftApiService<S>(
         return when (response.status.value) {
             200 -> {
                 val response: AuthResponse = response.body()
-                val repo = AccountRepository(state.config)
-                repo.remove(account)
+                repository.remove(account)
                 account.accessToken = response.accessToken
-                repo.add(account)
+                repository.add(account)
                 true
             }
             else -> false

@@ -37,6 +37,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.bundles.jna)
             implementation("com.adamglin:compose-shadow:2.0.4")
             implementation("media.kamel:kamel-image-default:1.0.6")
 

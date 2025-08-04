@@ -18,6 +18,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.AppConfig
+import ru.raspberry.launcher.models.OS
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.users.auth.AccountRepository
 import ru.raspberry.launcher.models.dtos.ApiInfo
@@ -66,30 +67,33 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                 state.launcherInfo = info
                 if (info.version != AppConfig.version) {
                     text.value = state.translation("loading.launcher.success.old", "Loading update...")
-                    val osName = System.getProperty("os.name")
                     val command: String
                     val format: String
-                    if (osName.startsWith("Windows")) {
-                        format = ".msi"
-                        command = "msiexec /i RaspberryLauncher.msi /passive /norestart /log install.log"
-                    } else if (osName.startsWith("Mac OS")) {
-                        format = ".pkg"
-                        val appDirectory = File(System.getProperty("user.dir"))
-                        command = "sudo installer -pkg RaspberryLauncher.pkg -target ${appDirectory.parent}"
-                    } else if (osName.startsWith("Linux")) {
-                        format = ".deb"
-                        command = "sudo apt install ./RaspberryLauncher.deb -y"
-                    }
-                    else {
-                        value = 1f
-                        text.value = state.translation(
-                            "loading.launcher.error.os",
-                            "Error: Unsupported OS"
-                        )
-                        // Wait 2 seconds and close
-                        delay(2000)
-                        state.close()
-                        return@coroutineScope
+                    when (state.os) {
+                        OS.Windows -> {
+                            format = ".msi"
+                            command = "msiexec /i RaspberryLauncher.msi /passive /norestart /log install.log"
+                        }
+                        OS.Linux -> {
+                            format = ".deb"
+                            command = "sudo apt install ./RaspberryLauncher.deb -y"
+                        }
+                        OS.OSX -> {
+                            format = ".pkg"
+                            val appDirectory = File(System.getProperty("user.dir"))
+                            command = "sudo installer -pkg RaspberryLauncher.pkg -target ${appDirectory.parent}"
+                        }
+                        else -> {
+                            value = 1f
+                            text.value = state.translation(
+                                "loading.launcher.error.os",
+                                "Error: Unsupported OS"
+                            )
+                            // Wait 2 seconds and close
+                            delay(2000)
+                            state.close()
+                            return@coroutineScope
+                        }
                     }
                     val response = client.get("${info.downloadUrl}$format") {
                         onDownload { bytesSentTotal, contentLength ->
@@ -104,7 +108,11 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                     dir.mkdirs()
                     val file = dir.resolve("RaspberryLauncher$format")
                     file.writeBytes(response.readRawBytes())
-                    command.runCommand(dir, 10, TimeUnit.MINUTES)
+                    command.runCommand(
+                        workingDir = dir,
+                        timeoutAmount = 10,
+                        timeoutUnit = TimeUnit.MINUTES
+                    )
                     exitProcess(0)
                 }
                 else
@@ -205,7 +213,6 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
             delay(2000)
             state.loaded.value = true
             state.changeScreen(MainWindowScreens.Main)
-
         }
         catch (e: Exception) {
             value = 1f

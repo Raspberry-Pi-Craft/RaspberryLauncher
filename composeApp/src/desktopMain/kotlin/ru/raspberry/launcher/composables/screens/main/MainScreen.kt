@@ -1,15 +1,11 @@
 package ru.raspberry.launcher.composables.screens.main
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,14 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowScope
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.statement.readRawBytes
-import io.ktor.http.HttpHeaders
-import io.ktor.http.headers
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -43,28 +38,31 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import raspberrylauncher.composeapp.generated.resources.*
 import ru.raspberry.launcher.composables.components.AppHeader
-import ru.raspberry.launcher.models.server.BasicServerData
+import ru.raspberry.launcher.composables.form.RedirectForm
+import ru.raspberry.launcher.composables.form.ServerForm
 import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.models.server.BasicServerData
 import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.service.GameLoader
+import ru.raspberry.launcher.service.repositories.RedirectRepository
+import ru.raspberry.launcher.service.repositories.ServerRepository
 import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.windows.MainWindowScreens
 import ru.raspberry.launcher.windows.dialogs.AccountsDialog
-import ru.raspberry.launcher.windows.dialogs.AdminDialog
 import ru.raspberry.launcher.windows.dialogs.AuthDialog
-import ru.raspberry.launcher.windows.dialogs.EditServerDialog
-import ru.raspberry.launcher.windows.dialogs.RemoveApproval
 import ru.raspberry.launcher.windows.dialogs.SettingsDialog
+import ru.raspberry.launcher.windows.dialogs.admin.CRUDAbstractDialog
+import kotlin.collections.mutableMapOf
 
 enum class DialogType {
-    Admin,
+    None,
     Accounts,
     Auth,
     Settings,
     GameError,
-    None,
-    EditServer,
-    RemoveServer
+    Redirects,
+    Users,
+    Servers
 }
 private var client = HttpClient(OkHttp) {
     install(ContentNegotiation) {
@@ -85,8 +83,8 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
         state.move(WindowPosition(Alignment.Center))
     }
     var dialogType by remember { mutableStateOf(DialogType.None) }
-    val errorDialogTitle = remember { mutableStateOf<@Composable () -> Unit>({}) }
-    val errorDialogText = remember { mutableStateOf<@Composable () -> Unit>({ }) }
+    var errorDialogTitle by remember { mutableStateOf<@Composable () -> Unit>({}) }
+    var errorDialogText by remember { mutableStateOf<@Composable () -> Unit>({ }) }
     var selectedServerName by remember { mutableStateOf<String?>(null) }
 
     AppTheme(
@@ -97,14 +95,53 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                 windowData = state,
                 customActions = {
                     if (state.adminMode) {
+                        var adminExpanded by remember { mutableStateOf(false) }
                         IconButton(
-                            onClick = { dialogType = DialogType.Admin },
+                            onClick = { adminExpanded = !adminExpanded },
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.edit),
                                 modifier = Modifier.size(24.dp),
                                 contentDescription = "Open Admin Panel"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = adminExpanded,
+                            onDismissRequest = { adminExpanded = false },
+                            modifier = Modifier.width(200.dp)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(text = "Servers") },
+                                onClick = {
+                                    dialogType = DialogType.Servers
+                                    adminExpanded = false
+                                }
+                            )
+//                            TODO: Create user admin panel
+//                            DropdownMenuItem(
+//                                text = { Text(text = "Users") },
+//                                onClick = {
+//                                    dialogType = DialogType.Users
+//                                    adminExpanded = false
+//                                }
+//                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Redirects") },
+                                onClick = {
+                                    dialogType = DialogType.Redirects
+                                    adminExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(
+                                    text = "${if (state.config.debug) "Disable" else "Enable"} Debug"
+                                ) },
+                                onClick = {
+                                    state.config.debug = !state.config.debug
+                                    state.config.save()
+                                    adminExpanded = false
+                                }
                             )
                         }
                     }
@@ -128,6 +165,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             contentDescription = "Settings"
                         )
                     }
+                    IconButton(
+                        onClick = { state.recompose() },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.reload),
+                            modifier = Modifier.size(24.dp),
+                            contentDescription = "Reload"
+                        )
+                    }
                     Spacer(modifier = Modifier.width(16.dp))
                 }
             )
@@ -147,33 +194,36 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     coroutine.launch {
                         val name = selectedServerName
                         if (name.isNullOrBlank()) {
-                            errorDialogTitle.value = {
+                            errorDialogTitle = {
                                 Text(text = "Server loading error!")
                             }
-                            errorDialogText.value = {
+                            errorDialogText = {
                                 Text(text = "Server name is empty or null!")
                             }
+                            dialogType = DialogType.GameError
                             return@launch
                         }
                         var data = state.launcherService.getServerInfo(name, state.config.language)
                         if (data == null) {
-                            errorDialogTitle.value = {
+                            errorDialogTitle = {
                                 Text(text = "Server loading error!")
                             }
-                            errorDialogText.value = {
+                            errorDialogText = {
                                 Text(text = "Server data is null for server: $name")
                             }
+                            dialogType = DialogType.GameError
                             return@launch
                         }
                         if (data.description == null)
                             data = state.launcherService.getServerInfo(name)
                         if (data == null) {
-                            errorDialogTitle.value = {
+                            errorDialogTitle = {
                                 Text(text = "Server loading error!")
                             }
-                            errorDialogText.value = {
+                            errorDialogText = {
                                 Text(text = "Server data is null for server: $name")
                             }
+                            dialogType = DialogType.GameError
                             return@launch
                         }
                         serverDataCache.put(
@@ -186,7 +236,17 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
 
                 val servers = remember {
                     runBlocking {
-                        state.launcherService.getServers()
+                        state.launcherService.listServers().toMutableList()
+                    }
+                }
+                servers.removeIf {
+                    runBlocking {
+                        val data = state.launcherService.getServerInfo(it, state.config.language)
+                        if (data == null) true
+                        else {
+                            serverDataCache[Pair(it, state.config.language)] = data
+                            false
+                        }
                     }
                 }
                 LazyColumn(
@@ -208,33 +268,6 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = name, modifier = Modifier.padding(start = 8.dp))
-                            Spacer(modifier = Modifier.weight(1f))
-                            if (state.adminMode) {
-                                IconButton(
-                                    onClick = {
-                                        selectServer(name)
-                                        dialogType = DialogType.EditServer
-                                    },
-                                ) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.edit),
-                                        contentDescription = "Edit Server",
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        selectServer(name)
-                                        dialogType = DialogType.RemoveServer
-                                    },
-                                ) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.close),
-                                        contentDescription = "Edit Server",
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
                         }
                     }
                 }
@@ -248,9 +281,9 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         .background(MaterialTheme.colorScheme.secondaryContainer)
                 ) {
                     Divider()
-                    Column (
+                    Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                    ){
+                    ) {
                         // Display
                         if (serverDataLoaded) {
                             val data = serverDataCache[Pair(selectedServerName, state.config.language)]
@@ -308,8 +341,11 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                                         coroutine.launch {
                                             loader.start(
                                                 serverName = data.name,
-                                                errorTitle = errorDialogTitle,
-                                                errorText = errorDialogText
+                                                error = { title, text ->
+                                                    errorDialogTitle = title
+                                                    errorDialogText = text
+                                                    dialogType = DialogType.GameError
+                                                },
                                             )
                                         }
                                     }
@@ -331,19 +367,18 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     }
                 }
             }
-            if (loader.progress > 0) {
-                LinearProgressIndicator(
-                    progress = { loader.progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp),
-                )
-            }
+            LinearProgressIndicator(
+                progress = { loader.progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp),
+            )
         }
         var authSystem = AuthSystem.ELY_BY
         var authCompleted = mutableStateOf(false)
         when (dialogType) {
-            DialogType.Accounts -> {
+            DialogType.None -> Unit
+            DialogType.Accounts ->
                 AccountsDialog(
                     state = state,
                     close = { dialogType = DialogType.None },
@@ -353,9 +388,7 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         authCompleted = data["authCompleted"] as? MutableState<Boolean> ?: mutableStateOf(false)
                     })
                 )
-            }
-
-            DialogType.Auth -> {
+            DialogType.Auth ->
                 AuthDialog(
                     state = state,
                     close = { dialogType = DialogType.None },
@@ -365,8 +398,6 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     authSystem = authSystem,
                     authCompleted = authCompleted
                 )
-            }
-
             DialogType.Settings ->
                 SettingsDialog(
                     state = state,
@@ -375,57 +406,58 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         dialogType = type
                     }),
                 )
-            DialogType.Admin ->
-                AdminDialog(
-                    state = state,
-                    close = { dialogType = DialogType.None },
-                    changeDialog = ({ type, data ->
-                        dialogType = type
-                    }),
-                )
-
-            DialogType.GameError -> {
+            DialogType.GameError ->
                 AlertDialog(
                     onDismissRequest = { dialogType = DialogType.None },
-                    confirmButton = { dialogType = DialogType.None },
-                    dismissButton = { dialogType = DialogType.None },
+                    confirmButton = {},
+                    dismissButton = {
+                        Button(
+                            onClick = { dialogType = DialogType.None },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "OK")
+                        }
+                    },
                     icon = {
                         Image(
                             painterResource(Res.drawable.raspberry),
                             contentDescription = "Error Window Icon"
                         )
                     },
-                    title = errorDialogTitle.value,
-                    text = errorDialogText.value,
+                    title = errorDialogTitle,
+                    text = errorDialogText,
                     tonalElevation = 8.dp
                 )
-            }
-            DialogType.EditServer ->
-                EditServerDialog(
+            DialogType.Redirects ->
+                CRUDAbstractDialog(
                     state = state,
                     close = { dialogType = DialogType.None },
                     changeDialog = ({ type, data ->
                         dialogType = type
                     }),
-                    serverName = selectedServerName!!,
+                    title = state.translation("admin.redirects", "Redirects"),
+                    titlePresenter = {
+                        key, data ->
+                        "$key -> ${data?.url ?: "New Redirect"}"
+                    },
+                    repository = RedirectRepository(state.launcherService),
+                    form = RedirectForm(RedirectRepository(state.launcherService))
                 )
-            DialogType.RemoveServer -> {
-                errorDialogTitle.value = {
-                    Text(text = state.translation("admin.remove_server.failed_title", "Remove Server Error"))
-                }
-                errorDialogText.value = {
-                    Text(text = state.translation("admin.remove_server.failed_text", "Failed to remove server."))
-                }
-                RemoveApproval(
+            DialogType.Users -> {}
+            DialogType.Servers ->
+                CRUDAbstractDialog(
                     state = state,
                     close = { dialogType = DialogType.None },
                     changeDialog = ({ type, data ->
                         dialogType = type
                     }),
-                    serverName = selectedServerName!!,
+                    title = state.translation("admin.servers", "Servers"),
+                    titlePresenter = {
+                            key, data -> key
+                    },
+                    repository = ServerRepository(state.launcherService),
+                    form = ServerForm(state)
                 )
-            }
-            DialogType.None -> Unit
         }
     }
 }

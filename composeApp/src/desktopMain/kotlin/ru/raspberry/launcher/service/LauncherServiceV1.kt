@@ -9,31 +9,39 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.OS
 import ru.raspberry.launcher.models.server.BasicServerData
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.dtos.LauncherInfo
-import ru.raspberry.launcher.models.java.Java
-import ru.raspberry.launcher.models.java.JavaChanges
-import ru.raspberry.launcher.models.java.JavaData
-import ru.raspberry.launcher.models.minecraft.MinecraftChanges
-import ru.raspberry.launcher.models.minecraft.MinecraftLoader
 import ru.raspberry.launcher.models.redirect.RedirectChanges
 import ru.raspberry.launcher.models.redirect.RedirectData
+import ru.raspberry.launcher.models.repo.versions.MinecraftVersionInfo
 import ru.raspberry.launcher.models.server.AdvancedServerData
 import ru.raspberry.launcher.models.server.Server
 import ru.raspberry.launcher.models.server.ServerChanges
 import ru.raspberry.launcher.models.users.UserInfo
 
 class LauncherServiceV1<S>(
-        private val state: WindowData<S>
+    private val state: WindowData<S>
 ) {
+    private var withToken = false
+    private var lastResponse: HttpResponse? = null
+    var response: HttpResponse?
+        get() = lastResponse
+        private set(value) {
+            lastResponse = value
+            if (!state.config.debug) return
+            println("${value?.request?.method} ${value?.request?.url} -> ${value?.status}")
+            println(runBlocking { value?.bodyAsText() ?: "No response body" })
+        }
 
     private var client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
+                explicitNulls = false
             })
         }
         headers {
@@ -73,9 +81,10 @@ class LauncherServiceV1<S>(
         response = client.get(
             urlString = "${state.config.host}/api/v1/auth/verify?id=${serverId}",
         )
+        this.response = response
         return when (response.status) {
             HttpStatusCode.OK -> {
-                token = response.bodyAsText().replace("\"", "")
+                val token = response.bodyAsText().replace("\"", "")
                 client = client.config {
                     defaultRequest {
                         headers {
@@ -83,11 +92,11 @@ class LauncherServiceV1<S>(
                         }
                     }
                 }
+                withToken = true
 
-                val response = client.get(urlString = "${state.config.host}/api/v1/admin/info")
-                if (response.status.isSuccess()) {
-                    val userInfo: UserInfo = response.body()
-                    state.isAccountAdmin = userInfo.isAdmin
+                val info = info()
+                if (info != null) {
+                    state.isAccountAdmin = info.isAdmin
                     state.adminMode = false
                 }
                 else {
@@ -101,11 +110,28 @@ class LauncherServiceV1<S>(
             else -> LauncherAuthResult.ConnectionFailed
         }
     }
+    suspend fun refresh() {
+        if (!withToken) return
+        val response = client.get(
+            urlString = "${state.config.host}/api/v1/auth/refresh"
+        )
+        this.response = response
+        if (!response.status.isSuccess()) return
+        val token = response.bodyAsText().replace("\"", "")
+        client = client.config {
+            defaultRequest {
+                headers {
+                    set(HttpHeaders.Authorization, "Bearer $token")
+                }
+            }
+        }
+    }
 
     suspend fun logout() {
         val response = client.get(
             urlString = "${state.config.host}/api/v1/auth/logout"
         )
+        this.response = response
         if (!response.status.isSuccess()) return
         client = client.config {
             defaultRequest {
@@ -116,47 +142,58 @@ class LauncherServiceV1<S>(
         }
         state.isAccountAdmin = false
         state.adminMode = false
+        withToken = false
     }
 
     suspend fun info() : UserInfo? {
         val response = client.get(
             urlString = "${state.config.host}/api/v1/user/info"
         )
+        this.response = response
         if (!response.status.isSuccess()) return null
         return response.body()
     }
 
     suspend fun op(username : String) : HttpResponse {
-        return client.post(
+        val response = client.post(
             urlString = "${state.config.host}/api/v1/user/op/${username.encodeURLPath()}"
         )
+        this.response = response
+        return response
     }
 
     suspend fun deop(username : String) : HttpResponse {
-        return client.post(
+        val response = client.post(
             urlString = "${state.config.host}/api/v1/user/deop/${username.encodeURLPath()}"
         )
+        this.response = response
+        return response
     }
 
     suspend fun ban(username : String) : HttpResponse {
-        return client.post(
+        val response = client.post(
             urlString = "${state.config.host}/api/v1/user/ban/${username.encodeURLPath()}"
         )
+        this.response = response
+        return response
     }
 
     suspend fun unban(username : String) : HttpResponse {
-        return client.post(
+        val response = client.post(
             urlString = "${state.config.host}/api/v1/user/unban/${username.encodeURLPath()}"
         )
+        this.response = response
+        return response
     }
 
     // =====================================================
     //                     Server API
     // =====================================================
-    suspend fun getServers() : List<String> {
+    suspend fun listServers() : List<String> {
         val response = client.get(
             urlString = "${state.config.host}/api/v1/server/list"
         )
+        this.response = response
         if (!response.status.isSuccess()) return emptyList()
         return response.body()
     }
@@ -165,6 +202,7 @@ class LauncherServiceV1<S>(
         val response = client.get(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}${if (locale != null) "?locale=${locale.encodeURLQueryComponent()}" else ""}"
         )
+        this.response = response
         if (!response.status.isSuccess()) return null
         return response.body()
     }
@@ -173,6 +211,7 @@ class LauncherServiceV1<S>(
         val response = client.get(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}/access"
         )
+        this.response = response
         return response.status.isSuccess()
     }
 
@@ -180,14 +219,16 @@ class LauncherServiceV1<S>(
         val response = client.get(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}/data?side=client&os=${os.name.encodeURLQueryComponent()}"
         )
+        this.response = response
         if (!response.status.isSuccess()) return null
         return response.body()
     }
 
-    suspend fun getServerAllData(serverName: String) : Server? {
+    suspend fun getServer(serverName: String) : Server? {
         val response = client.get(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}/all"
         )
+        this.response = response
         if (!response.status.isSuccess()) return null
         return response.body()
     }
@@ -195,7 +236,6 @@ class LauncherServiceV1<S>(
     suspend fun createServer(
         serverName: String,
         serverAddress: String,
-        java: String,
         minecraft: String
     ) : HttpResponse {
         val response = client.post(
@@ -205,10 +245,10 @@ class LauncherServiceV1<S>(
             setBody(ServerChanges(
                 name = serverName,
                 address = serverAddress,
-                java = java,
                 minecraft = minecraft
             ))
         }
+        this.response = response
         return response
     }
 
@@ -223,6 +263,7 @@ class LauncherServiceV1<S>(
             contentType(ContentType.Application.Json)
             setBody(serverData)
         }
+        this.response = response
         return response
     }
 
@@ -230,6 +271,7 @@ class LauncherServiceV1<S>(
         val response = client.delete(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}"
         )
+        this.response = response
         return response
     }
 
@@ -237,21 +279,25 @@ class LauncherServiceV1<S>(
     //                     Redirect API
     // =====================================================
     suspend fun redirect(name: String) : HttpResponse {
-        return client.get("${state.config.host}/api/v1/redirect?name=${name.encodeURLQueryComponent()}")
+        val response = client.get("${state.config.host}/api/v1/redirect?name=${name.encodeURLQueryComponent()}")
+        this.response = response
+        return response
     }
 
-    suspend fun listOfRedirects() : List<String>? {
+    suspend fun listRedirects() : List<String> {
         val response = client.get("${state.config.host}/api/v1/redirect/list")
-        return if (response.status.isSuccess()) response.body() else null
+        this.response = response
+        return if (response.status.isSuccess()) response.body() else emptyList()
     }
 
     suspend fun getRedirectData(name: String) : RedirectData? {
         val response = client.get("${state.config.host}/api/v1/redirect/get?name=${name.encodeURLQueryComponent()}")
+        this.response = response
         return if (response.status.isSuccess()) response.body() else null
     }
 
     suspend fun createRedirect(name: String, url: String) : HttpResponse {
-        return client.post("${state.config.host}/api/v1/redirect/create") {
+        val response = client.post("${state.config.host}/api/v1/redirect/create") {
             contentType(ContentType.Application.Json)
             setBody(
                 RedirectChanges(
@@ -260,121 +306,42 @@ class LauncherServiceV1<S>(
                 )
             )
         }
+        this.response = response
+        return response
     }
 
     suspend fun updateRedirect(name: String, changes: RedirectChanges) : HttpResponse {
-        return client.post("${state.config.host}/api/v1/redirect/update?name=${name.encodeURLQueryComponent()}") {
+        val response = client.patch("${state.config.host}/api/v1/redirect/update?name=${name.encodeURLQueryComponent()}") {
             contentType(ContentType.Application.Json)
             setBody(changes)
         }
+        this.response = response
+        return response
     }
 
     suspend fun removeRedirect(name: String) : HttpResponse {
-        return client.post("${state.config.host}/api/v1/redirect/update?name=${name.encodeURLQueryComponent()}") {
+        val response = client.delete("${state.config.host}/api/v1/redirect/delete?name=${name.encodeURLQueryComponent()}") {
             contentType(ContentType.Application.Json)
         }
-    }
-
-    // =====================================================
-    //                     Java API
-    // =====================================================
-
-    suspend fun listJava() : List<String>? {
-        val response = client.get("${state.config.host}/api/v1/java/list")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-    suspend fun listJavaVersions(java : String) : List<String>? {
-        val response = client.get("${state.config.host}/api/v1/java/${java.encodeURLPath()}/versions")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-    fun javaTag(java: String, version: String): String = "$java:$version"
-
-    suspend fun getJavaData(tag: String, os: OS) : JavaData? {
-        val response = client.get("${state.config.host}/api/v1/java/${tag.encodeURLPath()}?os=${os.name.encodeURLQueryComponent()}")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-
-    suspend fun getJavaAllData(tag: String) : Java? {
-        val response = client.get("${state.config.host}/api/v1/java/${tag.encodeURLPath()}/all")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-
-    suspend fun createJava(java: String, version: String) : HttpResponse {
-        return client.post("${state.config.host}/api/v1/java/create") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                JavaChanges(
-                    name = java,
-                    version = version
-                )
-            )
-        }
-    }
-
-    suspend fun updateJava(tag: String, os: OS, changes: JavaChanges) : HttpResponse {
-        return client.patch("${state.config.host}/api/v1/java/${tag.encodeURLPath()}?os=${os.name.encodeURLQueryComponent()}") {
-            contentType(ContentType.Application.Json)
-            setBody(changes)
-        }
-    }
-
-    suspend fun removeJava(tag: String) : HttpResponse {
-        return client.delete("${state.config.host}/api/v1/java/${tag.encodeURLPath()}")
+        this.response = response
+        return response
     }
 
     // =====================================================
     //                     Minecraft API
     // =====================================================
 
-    suspend fun listMinecraft() : List<String>? {
+    suspend fun listMinecraft() : List<String> {
         val response = client.get("${state.config.host}/api/v1/minecraft/list")
-        if (!response.status.isSuccess()) return null
+        this.response = response
+        if (!response.status.isSuccess()) return emptyList()
         return response.body()
     }
-    suspend fun listMinecraftLoaders(version : String) : List<String>? {
-        val response = client.get("${state.config.host}/api/v1/minecraft/${version.encodeURLPath()}/loaders")
+    suspend fun getMinecraftData(tag: String) : MinecraftVersionInfo? {
+        val response = client.get("${state.config.host}/api/v1/minecraft/${tag.encodeURLPath()}")
+        this.response = response
         if (!response.status.isSuccess()) return null
         return response.body()
-    }
-    fun minecraftTag(java: String, version: String): String = "$java:$version"
-
-    suspend fun getMinecraftData(tag: String, os: OS) : JavaData? {
-        val response = client.get("${state.config.host}/api/v1/minecraft/${tag.encodeURLPath()}?os=${os.name.encodeURLQueryComponent()}")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-
-    suspend fun getMinecraftAllData(tag: String) : Java? {
-        val response = client.get("${state.config.host}/api/v1/minecraft/${tag.encodeURLPath()}/all")
-        if (!response.status.isSuccess()) return null
-        return response.body()
-    }
-
-    suspend fun createMinecraft(version: String, loader: MinecraftLoader) : HttpResponse {
-        return client.post("${state.config.host}/api/v1/minecraft/create") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                MinecraftChanges(
-                    version = version,
-                    loader = loader
-                )
-            )
-        }
-    }
-
-    suspend fun updateMinecraft(tag: String, os: OS, changes: MinecraftChanges) : HttpResponse {
-        return client.patch("${state.config.host}/api/v1/minecraft/${tag.encodeURLPath()}?os=${os.name.encodeURLQueryComponent()}") {
-            contentType(ContentType.Application.Json)
-            setBody(changes)
-        }
-    }
-
-    suspend fun removeMinecraft(tag: String) : HttpResponse {
-        return client.delete("${state.config.host}/api/v1/minecraft/${tag.encodeURLPath()}")
     }
 
     // =====================================================
@@ -387,6 +354,7 @@ class LauncherServiceV1<S>(
             contentType(ContentType.Application.Json)
             setBody(dto)
         }
+        this.response = response
         return response
     }
 }

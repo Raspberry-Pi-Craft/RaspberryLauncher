@@ -7,5 +7,5 @@ import ru.raspberry.launcher.models.ChangeAction
 data class AccessChange(
     val action: ChangeAction,
     val user: String,
-    val newUser: String?
+    val newUser: String? = null
 )

@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.raspberry.launcher.composables.components.Spinner
 import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.theme.Theme
 import ru.raspberry.launcher.windows.MainWindowScreens
 
 @Preview
@@ -75,27 +76,34 @@ fun LauncherSettingsScreen(state: WindowData<MainWindowScreens>) {
             }
         }
         Spinner(
-            label = state.translation("settings.launcher.language", "Language"),
+            label = {
+                Text(state.translation("settings.launcher.language", "Language"))
+            },
             options = state.languages.values.toList(),
-            selectedOption = state.languages.keys.toList().indexOf(state.language.id),
-            toText = { it?.name ?: "No languages selected" },
+            selectedOption = state.language,
             onOptionSelected = { selected ->
                 state.config.language = selected.id
                 state.config.save()
                 state.recompose()
             },
+            toText = { it?.name ?: "No languages selected" },
             modifier = Modifier.fillMaxWidth().padding(4.dp),
         )
         Spinner(
-            label = state.translation("settings.launcher.theme", "Theme"),
+            label = {
+                Text(state.translation("settings.launcher.theme", "Theme"))
+            },
             options = state.themes.values.toList(),
-            selectedOption = state.themes.keys.toList().indexOf(state.config.theme),
-            toText = { it?.name ?: "No themes selected"},
+            selectedOption = state.themes.getOrDefault(
+                state.config.theme,
+                state.themes.values.firstOrNull()
+            ),
             onOptionSelected = { selected ->
-                state.config.theme = selected.name
+                state.config.theme = selected?.name ?: "Dark"
                 state.config.save()
                 state.recompose()
             },
+            toText = { it?.name ?: "No themes selected"},
             modifier = Modifier.fillMaxWidth().padding(4.dp),
         )
         if (state.isAccountAdmin) {

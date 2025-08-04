@@ -7,4 +7,5 @@ data class BasicServerData(
     val name: String,
     val description: String?,
     val imageUrl: String?,
+    val minecraft: String,
 )

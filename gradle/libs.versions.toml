@@ -9,6 +9,7 @@ ktor = "3.2.0"
 buildKonfig = "0.17.1"
 kotlinx-datetime = "0.7.1"
 knbt = "0.11.8"
+jna = "5.13.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -23,6 +24,8 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 benwoodworth-knbt = { module = "net.benwoodworth.knbt:knbt", version.ref = "knbt" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
@@ -31,3 +34,6 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 buildKonfig = {id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig"}
+
+[bundles]
+jna = ["jna", "jna-platform"]

@@ -6,5 +6,5 @@ import ru.raspberry.launcher.models.ChangeAction
 @Serializable
 data class HeaderChange(
     val action: ChangeAction,
-    val value: String,
+    val value: String?,
 )

@@ -21,7 +21,8 @@ data class Config(
     var minecraftWindowHeight: Int = 530,
     var ram: Int = 4096,
     var theme: String = "Light",
-    var language: String = "ru"
+    var language: String = "ru",
+    var debug: Boolean = false,
 ) {
     fun save() {
         val configFile = File("config.json")
