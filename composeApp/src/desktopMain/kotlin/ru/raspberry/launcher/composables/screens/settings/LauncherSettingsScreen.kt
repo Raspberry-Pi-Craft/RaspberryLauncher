@@ -1,9 +1,11 @@
 package ru.raspberry.launcher.composables.screens.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
@@ -106,16 +108,27 @@ fun LauncherSettingsScreen(state: WindowData<MainWindowScreens>) {
             toText = { it?.name ?: "No themes selected"},
             modifier = Modifier.fillMaxWidth().padding(4.dp),
         )
-        if (state.isAccountAdmin) {
-            Button(
-                onClick = {
-                    state.adminMode = !state.adminMode
-                    state.recompose()
+        Row(
+            modifier = Modifier.height(70.dp)
+        ) {
+            Text(
+                text = state.translation("settings.launcher.rich_presence", "Discord Rich Presence"),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .padding(8.dp),
+            )
+            Checkbox(
+                checked = state.config.richPresence,
+                onCheckedChange = {
+                    state.config.richPresence = it
+                    state.config.save()
+                    update = !update
                 },
-                modifier = Modifier.fillMaxWidth().padding(4.dp),
-            ){
-                Text(text = if (state.adminMode) "Disable Admin Mode" else "Enable Admin Mode")
-            }
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(8.dp),
+            )
         }
     }
 

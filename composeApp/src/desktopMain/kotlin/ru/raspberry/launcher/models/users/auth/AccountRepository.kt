@@ -8,6 +8,7 @@ import java.io.FileWriter
 import java.nio.file.Files
 import java.security.SecureRandom
 import java.util.Base64
+import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -26,28 +27,33 @@ class AccountRepository {
         load()
     }
     private fun load() {
-        if (!filepath.exists()) {
-            Files.createDirectories(filepath.parentFile.toPath())
-            return
+        try {
+            if (!filepath.exists()) {
+                Files.createDirectories(filepath.parentFile.toPath())
+                return
+            }
+
+            val reader = FileReader(filepath, Charsets.ISO_8859_1)
+            var data = reader.readText().toByteArray(Charsets.ISO_8859_1);
+            reader.close()
+
+            val iv = data.copyOfRange(0, 16)
+            data = data.copyOfRange(16, data.size)
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                SecretKeySpec(Base64.getDecoder().decode(config.secret), "AES"),
+                IvParameterSpec(iv)
+            )
+            data = cipher.doFinal(data)
+
+            cache.clear()
+            cache.addAll(Json.decodeFromString<List<Account>>(String(data, Charsets.UTF_8)))
         }
-
-        val reader = FileReader(filepath, Charsets.ISO_8859_1)
-        var data = reader.readText().toByteArray(Charsets.ISO_8859_1);
-        reader.close()
-
-        val iv = data.copyOfRange(0, 16)
-        data = data.copyOfRange(16, data.size)
-
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(
-            Cipher.DECRYPT_MODE,
-            SecretKeySpec(Base64.getDecoder().decode(config.secret), "AES"),
-            IvParameterSpec(iv)
-        )
-        data = cipher.doFinal(data)
-
-        cache.clear()
-        cache.addAll(Json.decodeFromString<List<Account>>(String(data, Charsets.UTF_8)))
+        catch (e: BadPaddingException) {
+            println(e.message)
+            filepath.delete()
+        }
     }
     fun save() {
         var data = Json.encodeToString(cache)
@@ -85,7 +91,9 @@ class AccountRepository {
 
     fun getMeta(): List<AccountMeta> {
         checkUpdate()
-        return cache.map { AccountMeta(it.authSystem, it.username) }
+        return cache
+            .map { AccountMeta(it.authSystem, it.username) }
+            .sortedBy { "${it.authSystem.name}_${it.username}" }
     }
     fun getByAuthSystem(authSystem: AuthSystem): List<Account> {
         checkUpdate()

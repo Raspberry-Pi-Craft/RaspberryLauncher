@@ -23,6 +23,7 @@ data class Config(
     var theme: String = "Light",
     var language: String = "ru",
     var debug: Boolean = false,
+    var richPresence: Boolean = false,
 ) {
     fun save() {
         val configFile = File("config.json")

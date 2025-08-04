@@ -52,6 +52,8 @@ import ru.raspberry.launcher.windows.dialogs.AccountsDialog
 import ru.raspberry.launcher.windows.dialogs.AuthDialog
 import ru.raspberry.launcher.windows.dialogs.SettingsDialog
 import ru.raspberry.launcher.windows.dialogs.admin.CRUDAbstractDialog
+import ru.raspberry.launcher.windows.dialogs.admin.ToolsDialog
+import ru.raspberry.launcher.windows.dialogs.admin.UserDialog
 import kotlin.collections.mutableMapOf
 
 enum class DialogType {
@@ -62,7 +64,8 @@ enum class DialogType {
     GameError,
     Redirects,
     Users,
-    Servers
+    Servers,
+    Tools
 }
 private var client = HttpClient(OkHttp) {
     install(ContentNegotiation) {
@@ -81,6 +84,14 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
     remember {
         state.resize( width = 960.dp, height = 540.dp)
         state.move(WindowPosition(Alignment.Center))
+        state.discord.details = state.translation(
+            "discord.main.details",
+            "Looking up for servers..."
+        )
+        state.discord.state = state.translation(
+            "discord.main.state",
+            "Looking..."
+        )
     }
     var dialogType by remember { mutableStateOf(DialogType.None) }
     var errorDialogTitle by remember { mutableStateOf<@Composable () -> Unit>({}) }
@@ -94,7 +105,8 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
             AppHeader<MainWindowScreens, Unit>(
                 windowData = state,
                 customActions = {
-                    if (state.adminMode) {
+                    var adminMode by remember { mutableStateOf(state.adminMode) }
+                    if (adminMode) {
                         var adminExpanded by remember { mutableStateOf(false) }
                         IconButton(
                             onClick = { adminExpanded = !adminExpanded },
@@ -118,18 +130,24 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                                     adminExpanded = false
                                 }
                             )
-//                            TODO: Create user admin panel
-//                            DropdownMenuItem(
-//                                text = { Text(text = "Users") },
-//                                onClick = {
-//                                    dialogType = DialogType.Users
-//                                    adminExpanded = false
-//                                }
-//                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Users") },
+                                onClick = {
+                                    dialogType = DialogType.Users
+                                    adminExpanded = false
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text(text = "Redirects") },
                                 onClick = {
                                     dialogType = DialogType.Redirects
+                                    adminExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Tools") },
+                                onClick = {
+                                    dialogType = DialogType.Tools
                                     adminExpanded = false
                                 }
                             )
@@ -142,6 +160,21 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                                     state.config.save()
                                     adminExpanded = false
                                 }
+                            )
+                        }
+                    }
+                    if (state.isAccountAdmin) {
+                        IconButton(
+                            onClick = {
+                                state.adminMode = !state.adminMode
+                                adminMode = state.adminMode
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.admin),
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = "Admin"
                             )
                         }
                     }
@@ -367,12 +400,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     }
                 }
             }
-            LinearProgressIndicator(
-                progress = { loader.progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp),
-            )
+            AnimatedVisibility(
+                visible = loader.progress.value > 0
+            ) {
+                LinearProgressIndicator(
+                    progress = { loader.progress.value },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp),
+                )
+            }
         }
         var authSystem = AuthSystem.ELY_BY
         var authCompleted = mutableStateOf(false)
@@ -443,7 +480,14 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     repository = RedirectRepository(state.launcherService),
                     form = RedirectForm(RedirectRepository(state.launcherService))
                 )
-            DialogType.Users -> {}
+            DialogType.Users ->
+                UserDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
+                )
             DialogType.Servers ->
                 CRUDAbstractDialog(
                     state = state,
@@ -457,6 +501,15 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     },
                     repository = ServerRepository(state.launcherService),
                     form = ServerForm(state)
+                )
+
+            DialogType.Tools ->
+                ToolsDialog(
+                    state = state,
+                    close = { dialogType = DialogType.None },
+                    changeDialog = ({ type, data ->
+                        dialogType = type
+                    }),
                 )
         }
     }

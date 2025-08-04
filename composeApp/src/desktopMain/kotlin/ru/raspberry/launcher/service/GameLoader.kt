@@ -2,6 +2,8 @@ package ru.raspberry.launcher.service
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.sun.jna.platform.win32.WinReg
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
@@ -15,19 +17,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.json.Json
 import net.benwoodworth.knbt.Nbt
 import net.benwoodworth.knbt.NbtCompound
 import net.benwoodworth.knbt.NbtCompression
-import net.benwoodworth.knbt.NbtList
-import net.benwoodworth.knbt.NbtTag
 import net.benwoodworth.knbt.NbtVariant
 import net.benwoodworth.knbt.add
 import net.benwoodworth.knbt.addNbtCompound
 import net.benwoodworth.knbt.buildNbtCompound
-import net.benwoodworth.knbt.buildNbtList
 import net.benwoodworth.knbt.decodeFromStream
 import net.benwoodworth.knbt.encodeToStream
 import net.benwoodworth.knbt.nbtCompound
@@ -66,7 +63,6 @@ import java.security.MessageDigest
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import javax.swing.UIManager.put
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
@@ -84,10 +80,7 @@ class GameLoader(
         "has_custom_resolution" to true
     )
     private var working = false
-    private var value : Float = 0f
-
-    val progress: Float
-        get() = value
+    var progress = mutableStateOf(0f)
 
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
@@ -116,6 +109,14 @@ class GameLoader(
         force: Boolean = false,
         error: (title: @Composable () -> Unit, text: @Composable () -> Unit) -> Unit
     ) {
+        state.discord.details = state.translation(
+            "discord.loading.details",
+            "Loading into server %s"
+        ).format(serverName)
+        state.discord.state = state.translation(
+            "discord.loading.state",
+            "Loading..."
+        )
         try {
             this.serverName = serverName
             if (working) {
@@ -123,7 +124,7 @@ class GameLoader(
                     { Text(text = "Already working") },
                     { Text(text = "Game already working!") }
                 )
-                value = 0f
+                progress.value = 0f
                 return
             }
             working = true
@@ -135,7 +136,8 @@ class GameLoader(
                     { Text(text = "Account not found") },
                     { Text(text = "Account not found! Please login to your account.") }
                 )
-                value = 0f
+                progress.value = 0f
+                working = false
                 return
             }
 
@@ -148,7 +150,8 @@ class GameLoader(
                     { Text(text = "No access") },
                     { Text(text = "You not have access to server $serverName!") }
                 )
-                value = 0f
+                progress.value = 0f
+                working = false
                 return
             }
             data = serverData
@@ -226,7 +229,8 @@ class GameLoader(
                 { Text(text = "Loading error") },
                 { Text(text = e.message ?: "Unknown error occurred while loading Minecraft!") }
             )
-            value = 0f
+            progress.value = 0f
+            working = false
         }
     }
 
@@ -301,7 +305,7 @@ class GameLoader(
         java.tryInstallJava(
             File("${state.config.minecraftPath}/java", javaVersion.component),
             force,
-            { value = it * 0.05f }
+            { progress.value = it * 0.05f }
         )
         println("Java installed!")
     }
@@ -309,7 +313,7 @@ class GameLoader(
         println("Installing libraries...")
         version.libraries.forEachIndexed { index, library ->
             library.tryInstallLibrary(librariesDir, force, {
-                value = 0.05f + (it + index) * 0.15f / version.libraries.size
+                progress.value = 0.05f + (it + index) * 0.15f / version.libraries.size
             })
         }
         println("Libraries installed!")
@@ -323,7 +327,7 @@ class GameLoader(
             throw MinecraftException("Minecraft client is not found in recipe!")
 
         if (!minecraftJarFile.exists() || force) {
-            val response = download(client, { value = 0.2f + it * 0.1f })
+            val response = download(client, { progress.value = 0.2f + it * 0.1f })
             if (response == null || !response.status.isSuccess())
                 throw MinecraftException("Failed to download Minecraft client!")
 
@@ -412,7 +416,7 @@ class GameLoader(
                 force,
                 {
                     downloaded = oldDownloaded + it * asset.size
-                    value = 0.3f + (downloaded / size) * 0.4f
+                    progress.value = 0.3f + (downloaded / size) * 0.4f
                 }
             )
         }
@@ -492,13 +496,13 @@ class GameLoader(
                 ) {
                     onDownload { bytesSentTotal, _ ->
                         loaded = oldLoaded + bytesSentTotal
-                        value = 0.7f + loaded / allSize * 0.2f
+                        progress.value = 0.7f + loaded / allSize * 0.3f
                     }
                 }
                 if (response.status.isSuccess()) {
                     file.writeBytes(response.readRawBytes())
                     loaded = oldLoaded + it.size
-                    value = 0.7f + loaded / allSize * 0.2f
+                    progress.value = 0.7f + loaded / allSize * 0.3f
                 } else {
                     throw MinecraftException("Failed to load file ${file.absolutePath}!")
                 }
@@ -606,8 +610,17 @@ class GameLoader(
         command.add(0, findJavaExecutable())
         command.add(version.mainClass)
         // After load
+
+        state.discord.details = state.translation(
+            "discord.playing.details",
+            "Playing on server %s"
+        ).format(serverName)
+        state.discord.state = state.translation(
+            "discord.playing.state",
+            "Playing..."
+        )
         state.minimize()
-        value = 0f
+        progress.value = 0f
         val process = command.runCommandWithoutTimeout(hooks = hooks)
         if (process != null) {
             thread {
@@ -615,12 +628,28 @@ class GameLoader(
                     while (process.isAlive)
                         delay(1000)
                     working = false
+                    state.discord.details = state.translation(
+                        "discord.main.details",
+                        "Looking up for servers..."
+                    )
+                    state.discord.state = state.translation(
+                        "discord.main.state",
+                        "Looking..."
+                    )
                     println("Process finished with exit code: ${process.exitValue()}")
                 }
             }
         }
         else {
             working = false
+            state.discord.details = state.translation(
+                "discord.main.details",
+                "Looking up for servers..."
+            )
+            state.discord.state = state.translation(
+                "discord.main.state",
+                "Looking..."
+            )
             println("Process start failed!")
         }
     }

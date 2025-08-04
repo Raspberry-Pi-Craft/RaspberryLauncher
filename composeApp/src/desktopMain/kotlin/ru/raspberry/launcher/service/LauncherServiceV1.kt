@@ -22,6 +22,7 @@ import ru.raspberry.launcher.models.server.AdvancedServerData
 import ru.raspberry.launcher.models.server.Server
 import ru.raspberry.launcher.models.server.ServerChanges
 import ru.raspberry.launcher.models.users.UserInfo
+import ru.raspberry.launcher.models.users.UserSelector
 
 class LauncherServiceV1<S>(
     private val state: WindowData<S>
@@ -94,7 +95,7 @@ class LauncherServiceV1<S>(
                 }
                 withToken = true
 
-                val info = info()
+                val info = getCurrentUserInfo()
                 if (info != null) {
                     state.isAccountAdmin = info.isAdmin
                     state.adminMode = false
@@ -145,9 +146,27 @@ class LauncherServiceV1<S>(
         withToken = false
     }
 
-    suspend fun info() : UserInfo? {
+    suspend fun listUsers(filter: UserSelector): List<String> {
+        val response = client.get(
+            urlString = "${state.config.host}/api/v1/user/list?selector=${filter.name.encodeURLQueryComponent()}"
+        )
+        this.response = response
+        if (!response.status.isSuccess()) return emptyList()
+        return response.body()
+    }
+
+    suspend fun getCurrentUserInfo() : UserInfo? {
         val response = client.get(
             urlString = "${state.config.host}/api/v1/user/info"
+        )
+        this.response = response
+        if (!response.status.isSuccess()) return null
+        return response.body()
+    }
+
+    suspend fun getUserInfo(user: String) : UserInfo? {
+        val response = client.get(
+            urlString = "${state.config.host}/api/v1/user/info/${user.encodeURLPath()}"
         )
         this.response = response
         if (!response.status.isSuccess()) return null
@@ -357,4 +376,5 @@ class LauncherServiceV1<S>(
         this.response = response
         return response
     }
+
 }

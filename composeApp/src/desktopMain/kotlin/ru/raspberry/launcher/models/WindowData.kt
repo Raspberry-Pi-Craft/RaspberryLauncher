@@ -11,6 +11,7 @@ import ru.raspberry.launcher.Language
 import ru.raspberry.launcher.models.users.auth.Account
 import ru.raspberry.launcher.models.dtos.LauncherInfo
 import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.service.DiscordIntegration
 import ru.raspberry.launcher.service.LauncherServiceV1
 import ru.raspberry.launcher.service.MinecraftApiService
 import ru.raspberry.launcher.theme.Theme
@@ -19,6 +20,7 @@ import ru.raspberry.launcher.theme.Theme
 data class WindowData<S>(
     private val currentScreen: MutableState<S>,
     private val windowState: WindowState,
+    val discord: DiscordIntegration,
     val close: () -> Unit,
     val maximize: () -> Unit,
     val minimize: () -> Unit,

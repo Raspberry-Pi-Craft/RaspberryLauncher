@@ -5,4 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserInfo(
     val isAdmin: Boolean,
+    val isBanned: Boolean,
 )

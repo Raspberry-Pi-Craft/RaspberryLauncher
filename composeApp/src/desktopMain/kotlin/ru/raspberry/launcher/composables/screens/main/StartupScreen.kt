@@ -7,6 +7,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,8 +30,18 @@ fun WindowScope.StartupScreen(state: WindowData<MainWindowScreens>) {
     val coroutineScope = rememberCoroutineScope()
     val text = mutableStateOf("Loading...")
     val launcherLoader = LauncherLoader(text, state)
-    coroutineScope.launch {
-        launcherLoader.start()
+    remember {
+        coroutineScope.launch {
+            launcherLoader.start()
+        }
+        state.discord.details = state.translation(
+            "discord.startup.details",
+            "Loading Raspberry Launcher..."
+        )
+        state.discord.state = state.translation(
+            "discord.startup.state",
+            "Starting up..."
+        )
     }
 
     AppTheme(

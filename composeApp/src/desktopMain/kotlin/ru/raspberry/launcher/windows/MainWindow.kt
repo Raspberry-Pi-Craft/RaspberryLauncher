@@ -23,6 +23,7 @@ import ru.raspberry.launcher.composables.screens.main.StartupScreen
 import ru.raspberry.launcher.models.Config
 import ru.raspberry.launcher.models.OS
 import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.service.DiscordIntegration
 import ru.raspberry.launcher.theme.Theme
 import ru.raspberry.launcher.tools.jna.JNA
 import ru.raspberry.launcher.tools.roundCorners
@@ -76,17 +77,23 @@ fun MainWindow(
         }?.associateBy { language -> language.id } ?: emptyMap()
 
         val os = System.getProperty("os.name")
+        val discord = DiscordIntegration()
+        discord.start()
         WindowData(
-            currentMainWindowScreens,
-            windowState,
-            close,
-            {
+            currentScreen = currentMainWindowScreens,
+            windowState = windowState,
+            discord = discord,
+            close = {
+                discord.stop()
+                close()
+            },
+            maximize = {
                 if (windowState.placement == WindowPlacement.Maximized)
                     windowState.placement = WindowPlacement.Floating
                 else
                     windowState.placement = WindowPlacement.Maximized
             },
-            {
+            minimize = {
                 windowState.isMinimized = !windowState.isMinimized
             },
             config = config,
