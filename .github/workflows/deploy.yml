@@ -15,6 +15,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Create tokens.yaml from secret
+        run: |
+          # Save secret to file (safe with printf)
+          printf '%s\n' "${{ secrets.TOKENS_YAML }}" > tokens.yaml
+          # Ensure file permissions (not strictly necessary, but OK)
+          chmod 600 tokens.yaml
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
         
@@ -45,6 +52,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Create tokens.yaml from secret
+        run: |
+          # Save secret to file (safe with printf)
+          printf '%s\n' "${{ secrets.TOKENS_YAML }}" > tokens.yaml
+          # Ensure file permissions (not strictly necessary, but OK)
+          chmod 600 tokens.yaml
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
         
@@ -74,6 +88,13 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Create tokens.yaml from secret (Windows)
+        shell: pwsh
+        run: |
+          $content = "${{ secrets.TOKENS_YAML }}"
+          # Write the file (no extra output)
+          Set-Content -Path tokens.yaml -Value $content -NoNewline
 
       - name: Build .msi
         run: ./gradlew packageReleaseMsi
