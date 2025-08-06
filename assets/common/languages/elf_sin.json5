@@ -57,6 +57,7 @@
     "settings.launcher.path": "Naid hyaranwa",
     "settings.launcher.language": "Lad",
     "settings.launcher.theme": "Gwaith",
+    "settings.launcher.rich_presence": "Athra-na-chened Discord",
 
     "settings.minecraft": "Minecraft",
     "settings.minecraft.path": "Naid Minecraft",
@@ -65,15 +66,32 @@
     "settings.minecraft.height": "Taur Minecraft",
     "settings.minecraft.discrete": "Tolo gwannad súr",
 
+    "discord.startup.details": "Tolo Raspberry Launcher...",
+    "discord.startup.state": "Tolo...",
+    "discord.main.details": "Tírien i servidores...",
+    "discord.main.state": "Tírien...",
+    "discord.loading.details": "Tolo mi i rho %s",
+    "discord.loading.state": "Tolo...",
+    "discord.playing.details": "Lada mi i rho %s",
+    "discord.playing.state": "Ladad...",
+
     "admin": "Gwaith rimba",
+    "admin.servers": "Rhô",
+    "admin.users": "Edain",
+    "admin.redirects": "Doleb",
+    "admin.tools": "Narn",
+    "admin.debug.enable": "Gwirith Debug",
+    "admin.debug.disable": "Díhed Debug",
 
-    "admin.launcher": "Hyaranwa",
-    "admin.launcher.version": "Thangail",
-    "admin.launcher.url": "Thanc corma",
-    "admin.launcher.create": "Carad aníron",
-
-    "admin.users": "Edair",
-
-    "admin.servers": "Carnilossë"
+    "error.server_loading.title": "Gurth i rho tolo!",
+    "error.server_loading.text": "I eneth i rho ú-adan ne nil!",
+    "error.server_data.title": "Evedui nadad",
+    "error.server_data.text": "Nadad evedui!",
+    "error.account_not_found.title": "Hain ú-adan",
+    "error.account_not_found.text": "Hain ú-adan! Pant ladad i hain.",
+    "error.no_access.title": "Ú-tolo",
+    "error.no_access.text": "Ú-gwanno tol i rho %s!",
+    "error.game_loading.title": "Gurth i tolo Minecraft!",
+    "error.game_loading.alter": "Gurth ú-nadad tolo Minecraft!",
   }
  }

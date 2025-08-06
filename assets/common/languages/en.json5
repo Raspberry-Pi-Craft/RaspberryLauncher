@@ -3,7 +3,6 @@
   "translation": {
     "app_name": "Raspberry Launcher",
     "select": "View...",
-
     // Loading
     "loading": "Loading...",
     "loading.launcher": "Checking updates...",
@@ -12,12 +11,10 @@
     "loading.launcher.success.old": "Loading update...",
     "loading.launcher.success.actual": "Launcher already updated!",
     "loading.launcher.error.os": "Error: OS not supported!",
-
     "loading.api": "Loading info about API...",
     "loading.api.error": "Error: %s - %s",
     "loading.api.error.version": "Error: Current version of API not supported!",
     "loading.api.success": "Data about API successfully loaded!",
-
     "loading.account": "Loading accounts...",
     "loading.account.zero": "Accounts not found!",
     "loading.account.zero.active": "Active account not found!",
@@ -30,7 +27,6 @@
     "loading.account.auth.invalid": "Active account verification error!",
     "loading.complete": "Startup completed",
     "loading.error": "Error: %s",
-
     // Auth
     "auth": "Authentication in %s",
     "auth.username": "Username",
@@ -41,29 +37,23 @@
     "auth.error.totp.invalid": "TOTP invalid!",
     "auth.error.credentials.invalid": "Username or password invalid!",
     "auth.error.unexpected": "Unexpected error!",
-
-
     "accounts": "Accounts",
     "accounts.login": "Enter in %s",
     "accounts.error.no_account": "Account not found!",
     "accounts.error.connection_failed": "Connection error!",
     "accounts.error.invalid_credentials": "Invalid credentials!",
     "accounts.error.failed_to_verify": "Account verification error!",
-
-
     "settings": "Settings",
     "play": "Play",
-
     // About
     "settings.about": "About",
     "settings.about.content": "Authors: Alexander Izmailov\n\n\n\n\n\n\n\nMade exclusively for \"Raspberry(Pi)Craft\"",
-
     // Launcher
     "settings.launcher": "Launcher",
     "settings.launcher.path": "Launcher data path",
     "settings.launcher.language": "Language",
     "settings.launcher.theme": "Theme",
-
+    "settings.launcher.rich_presence": "Discord Rich Presence",
     // Minecraft
     "settings.minecraft": "Minecraft",
     "settings.minecraft.path": "Minecraft path",
@@ -71,18 +61,32 @@
     "settings.minecraft.width": "Minecraft window width",
     "settings.minecraft.height": "Minecraft window height",
     "settings.minecraft.discrete": "Use discrete GPU",
-
+    // Discord
+    "discord.startup.details": "Loading Raspberry Launcher...",
+    "discord.startup.state": "Starting up...",
+    "discord.main.details": "Looking up for servers...",
+    "discord.main.state": "Looking...",
+    "discord.loading.details": "Loading into server %s",
+    "discord.loading.state": "Loading...",
+    "discord.playing.details": "Playing on server %s",
+    "discord.playing.state": "Playing...",
     // Admin
-    "admin": "Admin panel",
-
-    "admin.launcher": "Launcher",
-    "admin.launcher.version": "Version",
-    "admin.launcher.url": "Download URL",
-    "admin.launcher.create": "Create release",
-
-    "admin.users": "Users",
-
     "admin.servers": "Servers",
-
+    "admin.users": "Users",
+    "admin.redirects": "Redirects",
+    "admin.tools": "Tools",
+    "admin.debug.enable": "Enable Debug",
+    "admin.debug.disable": "Disable Debug",
+    // Errors
+    "error.server_loading.title": "Server loading error!",
+    "error.server_loading.text": "Server name is empty or null!",
+    "error.server_data.title": "Already working",
+    "error.server_data.text": "Game already working!",
+    "error.account_not_found.title": "Account not found",
+    "error.account_not_found.text": "Account not found! Please login to your account.",
+    "error.no_access.title": "No access",
+    "error.no_access.text": "You not have access to server %s!",
+    "error.game_loading.title": "Game loading error!",
+    "error.game_loading.alter": "Unknown error occurred while loading Minecraft!"
   }
 }

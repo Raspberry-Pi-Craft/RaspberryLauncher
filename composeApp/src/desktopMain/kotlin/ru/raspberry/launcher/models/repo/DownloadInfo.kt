@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class DownloadInfo(
     val sha1: String? = null,
     val size: Long? = null,
-    val url: String,
+    var url: String,
 )

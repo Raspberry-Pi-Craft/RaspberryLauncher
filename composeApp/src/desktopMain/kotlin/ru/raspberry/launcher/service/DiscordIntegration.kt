@@ -11,33 +11,43 @@ import kotlin.concurrent.thread
 
 class DiscordIntegration {
     private var params: CreateParams = CreateParams()
-    private var core: Core
-    private var activity: Activity
+    private var core: Core? = null
+    private var activity: Activity? = null
     private var working = false
 
     constructor() {
-        params.setClientID(1234567890123456789L)
-        params.setFlags(CreateParams.getDefaultFlags())
+        try {
+            params.setClientID(1234567890123456789L)
+            params.setFlags(CreateParams.getDefaultFlags())
 
+            core = Core(params)
+            activity = Activity()
+            activity?.timestamps()?.start = Date().toInstant()
+            activity?.assets()?.largeImage = "icon"
+        } catch (_: Exception) {
+            println("Discord SDK not found, rich presence will not be available.")
 
-        core = Core(params)
-        activity = Activity()
-        activity.timestamps().start = Date().toInstant()
-        activity.assets().largeImage = "icon"
-        core.activityManager().updateActivity(activity)
+        }
+    }
+
+    fun enableRichPresence() {
+        core?.activityManager()?.updateActivity(activity)
+    }
+    fun disableRichPresence() {
+        core?.activityManager()?.clearActivity()
     }
 
     var details: String
-        get() = activity.details
+        get() = activity?.details ?: ""
         set(value) {
-            activity.details = value
-            core.activityManager().updateActivity(activity)
+            activity?.details = value
+            core?.activityManager()?.updateActivity(activity)
         }
     var state: String
-        get() = activity.state
+        get() = activity?.state ?: ""
         set(value) {
-            activity.state = value
-            core.activityManager().updateActivity(activity)
+            activity?.state = value
+            core?.activityManager()?.updateActivity(activity)
         }
 
 
@@ -57,7 +67,9 @@ class DiscordIntegration {
 
 
     private suspend fun run() {
-        core.runCallbacks();
-        delay(100)
+        try {
+            core?.runCallbacks()
+            delay(10)
+        } catch (_: Exception) {}
     }
 }

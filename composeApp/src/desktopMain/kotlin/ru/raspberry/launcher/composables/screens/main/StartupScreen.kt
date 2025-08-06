@@ -34,6 +34,8 @@ fun WindowScope.StartupScreen(state: WindowData<MainWindowScreens>) {
         coroutineScope.launch {
             launcherLoader.start()
         }
+        if (state.config.richPresence)
+            state.discord.enableRichPresence()
         state.discord.details = state.translation(
             "discord.startup.details",
             "Loading Raspberry Launcher..."

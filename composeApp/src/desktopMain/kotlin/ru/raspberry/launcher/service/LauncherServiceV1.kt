@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -279,6 +280,13 @@ class LauncherServiceV1<S>(
         val response = client.patch(
             urlString = "${state.config.host}/api/v1/server/${serverName.encodeURLPath()}?locale=${locale.encodeURLQueryComponent()}"
         ) {
+            timeout {
+                // 600_000 ms -> 600 seconds -> 10 minutes
+                // This number due to the fact that server updates can take a long time, especially with large files.
+                requestTimeoutMillis = 600_000
+                socketTimeoutMillis = 600_000
+
+            }
             contentType(ContentType.Application.Json)
             setBody(serverData)
         }

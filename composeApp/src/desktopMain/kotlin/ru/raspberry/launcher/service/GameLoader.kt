@@ -2,7 +2,6 @@ package ru.raspberry.launcher.service
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.sun.jna.platform.win32.WinReg
 import io.ktor.client.*
@@ -46,6 +45,7 @@ import ru.raspberry.launcher.models.repo.versions.MinecraftVersion
 import ru.raspberry.launcher.models.repo.versions.VersionType
 import ru.raspberry.launcher.models.server.AdvancedServerData
 import ru.raspberry.launcher.models.server.files.ServerFile
+import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.tools.FileUtil
 import ru.raspberry.launcher.tools.UUIDTypeAdapter
 import ru.raspberry.launcher.tools.jna.JNA
@@ -103,12 +103,15 @@ class GameLoader(
     private val replacements: MutableMap<String, String> = mutableMapOf()
     private lateinit var version: MinecraftVersion
     private lateinit var data: AdvancedServerData
+    private val minecraftArgs = mutableListOf<String>()
 
     suspend fun start(
         serverName: String,
         force: Boolean = false,
         error: (title: @Composable () -> Unit, text: @Composable () -> Unit) -> Unit
     ) {
+        minecraftArgs.clear()
+        replacements.clear()
         state.discord.details = state.translation(
             "discord.loading.details",
             "Loading into server %s"
@@ -121,8 +124,22 @@ class GameLoader(
             this.serverName = serverName
             if (working) {
                 error(
-                    { Text(text = "Already working") },
-                    { Text(text = "Game already working!") }
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.already_working.title",
+                                "Already working"
+                            )
+                        )
+                    },
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.already_working.text",
+                                "Game already working!"
+                            )
+                        )
+                    }
                 )
                 progress.value = 0f
                 return
@@ -133,8 +150,22 @@ class GameLoader(
             val account = state.activeAccount
             if (account == null) {
                 error(
-                    { Text(text = "Account not found") },
-                    { Text(text = "Account not found! Please login to your account.") }
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.account_not_found.title",
+                                "Account not found"
+                            )
+                        )
+                    },
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.account_not_found.text",
+                                "Account not found! Please login to your account."
+                            )
+                        )
+                    }
                 )
                 progress.value = 0f
                 working = false
@@ -147,16 +178,29 @@ class GameLoader(
             val serverData = state.launcherService.getServerData(serverName, state.os)
             if (serverData == null) {
                 error(
-                    { Text(text = "No access") },
-                    { Text(text = "You not have access to server $serverName!") }
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.no_access.title",
+                                "No access"
+                            )
+                        )
+                    },
+                    {
+                        Text(
+                            text = state.translation(
+                                "error.no_access.text",
+                                "You not have access to server %s!"
+                            ).format(serverName)
+                        )
+                    }
                 )
                 progress.value = 0f
                 working = false
                 return
             }
             data = serverData
-            buildMinecraftVersion()
-            replacements.clear()
+            buildMinecraftVersion(account.authSystem)
             replacements["auth_username"] = account.username
             val uuid = UUIDTypeAdapter.fromString(account.id)
             replacements["auth_session"] = format(
@@ -191,6 +235,7 @@ class GameLoader(
             replacements["launcher_name"] = "Raspberry_Launcher"
             replacements["launcher_version"] = AppConfig.version
 
+            val workingDir = File(state.config.minecraftPath)
             val librariesDir = File(state.config.minecraftPath, "libraries")
             val gameDir = File(state.config.minecraftPath, "servers/$serverName")
             val assetsDir = File(state.config.minecraftPath, "assets")
@@ -199,16 +244,12 @@ class GameLoader(
 
             if (!minecraftDir.exists() && !minecraftDir.mkdirs())
                 throw MinecraftException("Failed to create Minecraft directory: ${minecraftDir.absolutePath}")
-            File(minecraftDir, "${version.id}.json").apply {
-                if (!exists() || force)
-                    writeText(jsonPretty.encodeToString(version))
-            }
 
-            replacements["library_directory"] = librariesDir.absolutePath
-            replacements["game_libraries_directory"] = librariesDir.absolutePath
-            replacements["game_directory"] = gameDir.absolutePath
-            replacements["assets_root"] = assetsDir.absolutePath
-            replacements["natives_directory"] = minecraftNativesDir.absolutePath
+            replacements["library_directory"] = librariesDir.relativeTo(workingDir).path
+            replacements["game_libraries_directory"] = librariesDir.relativeTo(workingDir).path
+            replacements["game_directory"] = gameDir.relativeTo(workingDir).path
+            replacements["assets_root"] = assetsDir.relativeTo(workingDir).path
+            replacements["natives_directory"] = minecraftNativesDir.relativeTo(workingDir).path
             val freeSpace: Long = File(state.config.minecraftPath).usableSpace
             if (freeSpace > 0 && freeSpace < 1024L * 64L) {
                 throw MinecraftException(
@@ -222,19 +263,33 @@ class GameLoader(
             installAssets(assetsDir, gameDir, force)
             installFiles(gameDir, force)
             generateServerConfig(gameDir)
-            launchGame()
+            launchGame(workingDir)
         } catch (e: MinecraftException) {
             println(e)
             error(
-                { Text(text = "Loading error") },
-                { Text(text = e.message ?: "Unknown error occurred while loading Minecraft!") }
+                {
+                    Text(
+                        text = state.translation(
+                        "error.game_loading.title",
+                            "Game loading error!"
+                        )
+                    )
+                },
+                {
+                    Text(
+                        text = e.message ?: state.translation(
+                            "error.game_loading.alter",
+                            "Unknown error occurred while loading Minecraft!"
+                        )
+                    )
+                }
             )
             progress.value = 0f
             working = false
         }
     }
 
-    private suspend fun buildMinecraftVersion() {
+    private suspend fun buildMinecraftVersion(system: AuthSystem) {
         val minecraft = data.minecraft
         if (minecraft == null) {
             throw MinecraftException(
@@ -249,9 +304,12 @@ class GameLoader(
         }
         version = json.decodeFromString(response.bodyAsText())
         version.inherit(state.launcherService, client, json)
+        val replaceList = getLibraryReplaces()
+        if (replaceList == null) return
+        version.patchFor("ely", replaceList, minecraftArgs)
     }
 
-    private fun constructClassPath(): String {
+    private fun constructClassPath(workingDir: File): String {
         println("Constructing classpath...")
         val result = StringBuilder()
         val classPath = version.getClassPath(state.os, features,
@@ -262,7 +320,7 @@ class GameLoader(
                 throw Exception("Classpath is not found: $file")
             if (result.isNotEmpty())
                 result.append(separator)
-            result.append(file.absolutePath)
+            result.append(file.relativeTo(workingDir).path)
         }
 
         return result.toString()
@@ -548,8 +606,9 @@ class GameLoader(
         }
     }
     private fun launchGame(
+        workingDir: File
     ) {
-        replacements["classpath"] = constructClassPath()
+        replacements["classpath"] = constructClassPath(workingDir)
         println("Launching game of $serverName")
 
         val command = mutableListOf<String>()
@@ -559,25 +618,28 @@ class GameLoader(
         command.add("-Xmx${state.config.ram}M")
         command.add("-Dfile.encoding=UTF-8")
         addOptimizedArguments(command)
-
-        command.addAll(
-            version.activeArguments(
-                ArgumentType.Jvm, state.os, features
-            )?.flatMap { arg -> arg.split(" ") } ?: emptyList()
-        )
-        command.add("-Dfml.ignoreInvalidMinecraftCertificates=true")
-        command.add("-Dfml.ignorePatchDiscrepancies=true")
-        command.add("-Djava.net.useSystemProxies=true")
         if (state.os == OS.Windows)
             command.add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump")
-        else
+        else if (state.os == OS.OSX)
             command.add("-Xdock:name=Minecraft")
 
+        command.addAll(
+            run {
+                val list = version.activeArguments(
+                    ArgumentType.Jvm, state.os, features
+                )?.toMutableList() ?: mutableListOf()
+                list.removeIf { it.contains("net.minecraft.client.main.Main") }
+                list.flatMap { arg -> arg.split(" ") }
+            }
+        )
+
+        command.add(version.mainClass)
         command.addAll(
             version.activeArguments(
                 ArgumentType.Game, state.os, features
             )?.flatMap { arg -> arg.split(" ") } ?: emptyList()
         )
+
 
         // GPU selection
         when(state.os) {
@@ -607,10 +669,27 @@ class GameLoader(
                 replacements[match.groupValues[1]] ?: match.value
             }
         }
+        val composedCommand = command.joinToString("\n")
+        val argsFile = File(workingDir, "args.txt")
+        if (composedCommand.length > 30_000) {
+            // Using external file for command
+            argsFile.writeText(composedCommand)
+            command.clear()
+            command.add("@${argsFile.absolutePath}")
+        }
         command.add(0, findJavaExecutable())
-        command.add(version.mainClass)
-        // After load
+        if (state.config.debug) {
+            println("Command size: ${composedCommand.length}")
+            println("Command:")
+            command.forEach { println(it) }
+        }
 
+        val process = command.runCommandWithoutTimeout(
+            hooks = hooks,
+            workingDir = workingDir
+        )
+
+        // After load
         state.discord.details = state.translation(
             "discord.playing.details",
             "Playing on server %s"
@@ -621,12 +700,12 @@ class GameLoader(
         )
         state.minimize()
         progress.value = 0f
-        val process = command.runCommandWithoutTimeout(hooks = hooks)
         if (process != null) {
             thread {
                 runBlocking {
                     while (process.isAlive)
                         delay(1000)
+                    argsFile.delete()
                     working = false
                     state.discord.details = state.translation(
                         "discord.main.details",
@@ -641,6 +720,7 @@ class GameLoader(
             }
         }
         else {
+            argsFile.delete()
             working = false
             state.discord.details = state.translation(
                 "discord.main.details",

@@ -11,7 +11,7 @@ data class ServerChanges(
     var description: String? = null,
     var imageUrl: String? = null,
     var visibleWithoutAuth: Boolean? = null,
-    val visibleWithoutAccess: Boolean? = null,
+    var visibleWithoutAccess: Boolean? = null,
     var access: UserAccess? = null,
     var accessUsers: List<AccessChange>? = null,
     var address: String? = null,

@@ -72,16 +72,33 @@
     "settings.minecraft.height": "Высота окна Майнкрафта",
     "settings.minecraft.discrete": "Использовать дискретную видеокарту",
 
-    // Admin
+    // Discord
+    "discord.startup.details": "Загрузка Raspberry Launcher...",
+    "discord.startup.state": "Запуск...",
+    "discord.main.details": "Просмотр серверов...",
+    "discord.main.state": "Просмотр...",
+    "discord.loading.details": "Загрузка на сервер %s",
+    "discord.loading.state": "Загрузка...",
+    "discord.playing.details": "Игра на сервере %s",
+    "discord.playing.state": "Играет...",
+
+    // Admin (продолжение)
     "admin": "Панель администрирования",
+    "admin.redirects": "Редиректы",
+    "admin.tools": "Инструменты",
+    "admin.debug.enable": "Включить отладку",
+    "admin.debug.disable": "Отключить отладку",
 
-    "admin.launcher": "Лаунчер",
-    "admin.launcher.version": "Версия",
-    "admin.launcher.url": "URL для скачивания",
-    "admin.launcher.create": "Создать релиз",
-
-    "admin.users": "Пользователи",
-
-    "admin.servers": "Сервера"
+    // Errors
+    "error.server_loading.title": "Ошибка загрузки сервера!",
+    "error.server_loading.text": "Имя сервера пустое или null!",
+    "error.server_data.title": "Уже запущено",
+    "error.server_data.text": "Игра уже запущена!",
+    "error.account_not_found.title": "Аккаунт не найден",
+    "error.account_not_found.text": "Аккаунт не найден! Пожалуйста, войдите в аккаунт.",
+    "error.no_access.title": "Нет доступа",
+    "error.no_access.text": "У вас нет доступа к серверу %s!",
+    "error.game_loading.title": "Ошибка загрузки игры!",
+    "error.game_loading.alter": "Произошла неизвестная ошибка при запуске Minecraft!"
   }
 }

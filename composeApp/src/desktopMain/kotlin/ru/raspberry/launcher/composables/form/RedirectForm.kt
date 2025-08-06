@@ -18,6 +18,7 @@ import ru.raspberry.launcher.composables.components.Accordion
 import ru.raspberry.launcher.composables.components.Spinner
 import ru.raspberry.launcher.models.ChangeAction
 import ru.raspberry.launcher.models.DataAccess
+import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.redirect.HeaderChange
 import ru.raspberry.launcher.models.redirect.RedirectChanges
 import ru.raspberry.launcher.models.users.access.AccessChange
@@ -26,8 +27,10 @@ import ru.raspberry.launcher.service.repositories.RedirectRepository
 
 
 class RedirectForm<S>(
-    private val repository: RedirectRepository<S>,
+    private val state: WindowData<S>
 ) : AbstractForm<String> {
+    private val repository = RedirectRepository(state.launcherService)
+
     @Composable
     override fun Add(): () -> Unit {
         var name by remember { mutableStateOf("") }
@@ -136,7 +139,7 @@ class RedirectForm<S>(
                         value = value,
                         onValueChange = { value = it },
                         singleLine = true,
-                        label = { Text("User") },
+                        label = { Text("Username") },
                         modifier = Modifier.padding(8.dp).fillMaxWidth(),
                         isError = value.isBlank(),
                         supportingText = {
@@ -202,7 +205,7 @@ class RedirectForm<S>(
                                     }
                                 },
                                 singleLine = true,
-                                label = { Text("URL") },
+                                label = { Text("Username") },
                                 modifier = Modifier.weight(1f),
                             )
                             IconButton(

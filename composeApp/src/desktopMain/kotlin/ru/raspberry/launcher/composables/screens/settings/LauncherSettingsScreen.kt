@@ -121,6 +121,8 @@ fun LauncherSettingsScreen(state: WindowData<MainWindowScreens>) {
             Checkbox(
                 checked = state.config.richPresence,
                 onCheckedChange = {
+                    if (it) state.discord.enableRichPresence()
+                    else state.discord.disableRichPresence()
                     state.config.richPresence = it
                     state.config.save()
                     update = !update

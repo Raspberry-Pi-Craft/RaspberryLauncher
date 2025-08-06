@@ -124,21 +124,21 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             modifier = Modifier.width(200.dp)
                         ) {
                             DropdownMenuItem(
-                                text = { Text(text = "Servers") },
+                                text = { Text(text = state.translation("admin.servers","Servers")) },
                                 onClick = {
                                     dialogType = DialogType.Servers
                                     adminExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "Users") },
+                                text = { Text(text = state.translation("admin.users","Users")) },
                                 onClick = {
                                     dialogType = DialogType.Users
                                     adminExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "Redirects") },
+                                text = { Text(text = state.translation("admin.redirects","Redirects")) },
                                 onClick = {
                                     dialogType = DialogType.Redirects
                                     adminExpanded = false
@@ -153,7 +153,10 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             )
                             DropdownMenuItem(
                                 text = { Text(
-                                    text = "${if (state.config.debug) "Disable" else "Enable"} Debug"
+                                    text = if (state.config.debug)
+                                        state.translation("admin.debug.disable","Disable Debug")
+                                    else
+                                        state.translation("admin.debug.enable", "Enable Debug")
                                 ) },
                                 onClick = {
                                     state.config.debug = !state.config.debug
@@ -228,10 +231,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         val name = selectedServerName
                         if (name.isNullOrBlank()) {
                             errorDialogTitle = {
-                                Text(text = "Server loading error!")
+                                Text(text = state.translation(
+                                    "error.server_loading.title",
+                                    "Server loading error!"
+                                ))
                             }
                             errorDialogText = {
-                                Text(text = "Server name is empty or null!")
+                                Text(text = state.translation(
+                                    "error.server_loading.text",
+                                    "Server name is empty or null!"
+                                ))
                             }
                             dialogType = DialogType.GameError
                             return@launch
@@ -239,10 +248,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         var data = state.launcherService.getServerInfo(name, state.config.language)
                         if (data == null) {
                             errorDialogTitle = {
-                                Text(text = "Server loading error!")
+                                Text(text =  state.translation(
+                                    "error.server_loading.title",
+                                    "Server loading error!"
+                                ))
                             }
                             errorDialogText = {
-                                Text(text = "Server data is null for server: $name")
+                                Text(text =  state.translation(
+                                    "error.server_data.title",
+                                    "Server data is null for server: %s"
+                                ).format(name))
                             }
                             dialogType = DialogType.GameError
                             return@launch
@@ -251,10 +266,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             data = state.launcherService.getServerInfo(name)
                         if (data == null) {
                             errorDialogTitle = {
-                                Text(text = "Server loading error!")
+                                Text(text =  state.translation(
+                                    "error.server_loading.title",
+                                    "Server loading error!"
+                                ))
                             }
                             errorDialogText = {
-                                Text(text = "Server data is null for server: $name")
+                                Text(text =  state.translation(
+                                    "error.server_data.title",
+                                    "Server data is null for server: %s"
+                                ).format(name))
                             }
                             dialogType = DialogType.GameError
                             return@launch
@@ -478,7 +499,7 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                         "$key -> ${data?.url ?: "New Redirect"}"
                     },
                     repository = RedirectRepository(state.launcherService),
-                    form = RedirectForm(RedirectRepository(state.launcherService))
+                    form = RedirectForm(state)
                 )
             DialogType.Users ->
                 UserDialog(

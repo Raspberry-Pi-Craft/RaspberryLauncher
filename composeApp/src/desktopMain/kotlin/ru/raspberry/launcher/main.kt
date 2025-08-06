@@ -16,10 +16,10 @@ val GoodJson = Json {
 }
 
 fun main() = application {
-    BetterErrorHandling {
+//    BetterErrorHandling {
         MainWindow(
             close = ::exitApplication
         )
-    }
+//    }
 }
 

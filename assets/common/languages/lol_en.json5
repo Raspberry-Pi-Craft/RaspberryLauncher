@@ -63,6 +63,7 @@
     "settings.launcher.path": "Path 2 launchur hoard",
     "settings.launcher.language": "Langwidge",
     "settings.launcher.theme": "Themez n sparklez",
+    "settings.launcher.rich_presence": "Discord Rich Prezence",
 
     // Minecraft
     "settings.minecraft": "Minecraft",
@@ -72,16 +73,32 @@
     "settings.minecraft.height": "Minecraft height",
     "settings.minecraft.discrete": "Use powah GPU! pew pew!",
 
-    // Admin
+    "discord.startup.details": "Loadin Rasburry Launchur... so excite!",
+    "discord.startup.state": "Bootin upz...",
+    "discord.main.details": "Lukin servers... where iz da party?",
+    "discord.main.state": "Lukin...",
+    "discord.loading.details": "Joinin server %s... iz party time!",
+    "discord.loading.state": "Loadin server... nom nom",
+    "discord.playing.details": "Playin on server %s... LET'S GOOOO",
+    "discord.playing.state": "Gamin like a pro kitteh!",
+
     "admin": "Admin panelz oOo",
+    "admin.servers": "Serverz",
+    "admin.users": "Hoomenz",
+    "admin.redirects": "Jump portals",
+    "admin.tools": "Admin toolz (handle wif care)",
+    "admin.debug.enable": "Turn on da debugs (zzzt!)",
+    "admin.debug.disable": "Turn off da debugs (nap time)",
 
-    "admin.launcher": "Launchur stuf",
-    "admin.launcher.version": "Vershun",
-    "admin.launcher.url": "Downloadz URL",
-    "admin.launcher.create": "Make nu releez",
-
-    "admin.users": "Users",
-
-    "admin.servers": "Servers",
+    "error.server_loading.title": "OH NO! Server go poof!",
+    "error.server_loading.text": "Server name? it eated? D:",
+    "error.server_data.title": "Already busy chonk",
+    "error.server_data.text": "Game already runnin, no double dippin!",
+    "error.account_not_found.title": "No accountz!! HALP!",
+    "error.account_not_found.text": "U need loginz first, silly cat!",
+    "error.no_access.title": "ACCESS DENIED >:c",
+    "error.no_access.text": "U iz nawt allowed on server %s, sowwy!",
+    "error.game_loading.title": "Game no loadin! Y u do dis?!",
+    "error.game_loading.alter": "Somethin borked while loadin Minecraft :("
   }
 }

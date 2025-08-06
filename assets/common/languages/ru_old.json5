@@ -57,6 +57,7 @@
     "settings.launcher.path": "Путь къ файламъ запускателя",
     "settings.launcher.language": "Языкъ",
     "settings.launcher.theme": "Тема",
+    "settings.launcher.rich_presence": "Дискордъ Ричъ Презенсъ",
 
     "settings.minecraft": "Майнкрафтъ",
     "settings.minecraft.path": "Путь къ файламъ Майнкрафта",
@@ -65,15 +66,32 @@
     "settings.minecraft.height": "Высота окна Майнкрафта",
     "settings.minecraft.discrete": "Употреблять дискретную видеокарту",
 
+    "discord.startup.details": "Загруженіе Распберрі Запускателя...",
+    "discord.startup.state": "Запускъ...",
+    "discord.main.details": "Производится поискъ серверовъ...",
+    "discord.main.state": "Поискъ...",
+    "discord.loading.details": "Загруженіе на серверъ %s",
+    "discord.loading.state": "Загруженіе...",
+    "discord.playing.details": "Играніе на серверѣ %s",
+    "discord.playing.state": "Играніе...",
+
     "admin": "Панель управленія",
-
-    "admin.launcher": "Запускатель программъ",
-    "admin.launcher.version": "Изданіе",
-    "admin.launcher.url": "URL для скачиванія",
-    "admin.launcher.create": "Создать выпускъ",
-
+    "admin.servers": "Серверы",
     "admin.users": "Пользователи",
+    "admin.redirects": "Перенаправленія",
+    "admin.tools": "Инструменты",
+    "admin.debug.enable": "Включить отладку",
+    "admin.debug.disable": "Отключить отладку",
 
-    "admin.servers": "Служебныя машины"
+    "error.server_loading.title": "Ошибка загрузки сервера!",
+    "error.server_loading.text": "Имя сервера пусто либо не указано!",
+    "error.server_data.title": "Уже запущено",
+    "error.server_data.text": "Игра уже запущена!",
+    "error.account_not_found.title": "Учетная запись не найдена",
+    "error.account_not_found.text": "Учетная запись не найдена! Пожалуйста, войдите въ свою запись.",
+    "error.no_access.title": "Недостаточно правъ",
+    "error.no_access.text": "У Васъ нѣтъ доступа къ серверу %s!",
+    "error.game_loading.title": "Ошибка загрузки игры!",
+    "error.game_loading.alter": "Произошла неизвѣстная ошибка при загрузкѣ Майнкрафта!",
   }
 }
