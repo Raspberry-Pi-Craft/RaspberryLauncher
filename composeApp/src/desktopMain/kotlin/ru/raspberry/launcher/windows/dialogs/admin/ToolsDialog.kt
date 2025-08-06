@@ -39,16 +39,23 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.path
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import ru.raspberry.launcher.AppConfig
 import ru.raspberry.launcher.composables.components.Accordion
 import ru.raspberry.launcher.composables.components.AppHeader
 import ru.raspberry.launcher.composables.screens.main.DialogType
 import ru.raspberry.launcher.models.DialogData
 import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.models.dtos.LauncherInfo
 import ru.raspberry.launcher.models.tools.servers.deprecated.DeprecatedServerData
 import ru.raspberry.launcher.models.server.Server
 import ru.raspberry.launcher.models.server.ServerChanges
@@ -58,6 +65,9 @@ import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.tools.roundCorners
 import ru.raspberry.launcher.windows.MainWindowScreens
 import java.io.File
+import java.util.Date
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -112,6 +122,7 @@ fun ToolsDialog(
             ) {
                 Importer(state)
                 Migrator(state)
+                LauncherRelease(state)
             }
         }
     }
@@ -247,6 +258,80 @@ private fun Migrator(state: WindowData<MainWindowScreens>) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+
+        }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun LauncherRelease(state: WindowData<MainWindowScreens>) {
+    Accordion(
+        title = { Text("Release new launcher version") },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        val coroutine = rememberCoroutineScope()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            val result = remember { mutableStateOf<String?>(null) }
+            AnimatedVisibility(visible = result.value != null) {
+                Text(
+                    text = result.value ?: "",
+                    maxLines = 100
+                )
+            }
+            var version by remember { mutableStateOf(state.launcherInfo?.version ?: AppConfig.version) }
+            TextField(
+                value = version,
+                onValueChange = { version = it },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(8.dp),
+                label = { Text(text = "Version") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                )
+            )
+            var url by remember { mutableStateOf(state.launcherInfo?.downloadUrl ?: "") }
+            TextField(
+                value = url,
+                onValueChange = { url = it },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(8.dp),
+                label = { Text(text = "Download URL") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                )
+            )
+            Button(
+                onClick = {
+                    result.value = "Release process started..."
+                    coroutine.launch {
+                        val response = state.launcherService.releaseNewLauncherVersion(LauncherInfo(
+                            version = version,
+                            downloadUrl = url,
+                            lastUpdated = LocalDateTime.Formats.ISO.format(
+                                Clock.System.now().toLocalDateTime(TimeZone.UTC)
+                            ),
+                        ))
+                        if (response.status.isSuccess())
+                            result.value = "Release rolled out successfully!"
+                        else
+                            result.value = "Release failed: ${response.status.value} - ${response.bodyAsText()}"
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(0.8f).padding(8.dp)
+            ) {
+                Text("Release")
+            }
 
         }
     }

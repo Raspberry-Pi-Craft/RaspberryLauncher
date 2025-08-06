@@ -18,7 +18,6 @@ import ru.raspberry.launcher.models.repo.library.Library
 import ru.raspberry.launcher.models.repo.library.LibraryReplaceList
 import ru.raspberry.launcher.service.LauncherServiceV1
 import java.io.File
-import java.util.function.Predicate
 import java.util.regex.Pattern
 
 private val libDataExtractor = "([^:]+?:[^:]+?):([^:]+)(?::([^:]+))?".toRegex()

@@ -35,7 +35,7 @@ import ru.raspberry.launcher.composables.screens.main.DialogType
 import ru.raspberry.launcher.composables.screens.main.imageCache
 import ru.raspberry.launcher.models.DialogData
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.users.auth.AccountRepository
+import ru.raspberry.launcher.service.AccountRepository
 import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.service.LauncherServiceV1
 import ru.raspberry.launcher.theme.AppTheme
@@ -85,7 +85,7 @@ fun AccountsDialog(
         ) {
             val scrollState = rememberScrollState()
             val repository = remember {
-                AccountRepository(config = state.config)
+                AccountRepository(state)
             }
             val metas = repository.getMeta()
             val coroutine = rememberCoroutineScope()

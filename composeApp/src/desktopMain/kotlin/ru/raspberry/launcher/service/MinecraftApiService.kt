@@ -14,21 +14,18 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.users.auth.Account
-import ru.raspberry.launcher.models.users.auth.AccountMeta
-import ru.raspberry.launcher.models.users.auth.AccountRepository
 import ru.raspberry.launcher.models.users.auth.AuthSystem
 import ru.raspberry.launcher.models.dtos.Error
 import ru.raspberry.launcher.models.dtos.auth.*
+import ru.raspberry.launcher.models.users.Profile
 import kotlin.random.Random
 
-class MinecraftApiService(
-    private val repository: AccountRepository
-) {
+class MinecraftApiService<S>(private val data: WindowData<S>) {
     @OptIn(ExperimentalSerializationApi::class)
     private val client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json(Json{
-
+                ignoreUnknownKeys = true
                 decodeEnumsCaseInsensitive = true
             })
         }
@@ -46,7 +43,7 @@ class MinecraftApiService(
         Successful
     }
     suspend fun auth(
-        repository: AccountRepository,
+        repository: AccountRepository<S>,
         authSystem: AuthSystem,
         username: String,
         password: String,
@@ -96,6 +93,16 @@ class MinecraftApiService(
         }
     }
 
+    suspend fun getProfileById(
+        authSystem: AuthSystem,
+        accountId: String
+    ): Profile? {
+        val response = client.get(
+            urlString = authSystem.profileUrl.format(accountId)
+        )
+        return if (response.status.isSuccess()) response.body() else null
+    }
+
     suspend fun refreshToken(
         account: Account
     ): Boolean {
@@ -111,9 +118,9 @@ class MinecraftApiService(
         return when (response.status.value) {
             200 -> {
                 val response: AuthResponse = response.body()
-                repository.remove(account)
+                AccountRepository(data).remove(account)
                 account.accessToken = response.accessToken
-                repository.add(account)
+                AccountRepository(data).add(account)
                 true
             }
             else -> false

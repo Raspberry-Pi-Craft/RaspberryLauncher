@@ -8,6 +8,7 @@ data class Account(
     val authSystem: AuthSystem = AuthSystem.ELY_BY,
     val clientToken: String = Random.nextBytes(32).joinToString("") { "%02x".format(it) },
     val id: String,
+    @Transient
     val username: String,
     var accessToken: String
 )

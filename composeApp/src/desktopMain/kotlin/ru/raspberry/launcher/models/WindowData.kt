@@ -10,7 +10,6 @@ import androidx.compose.ui.window.WindowState
 import ru.raspberry.launcher.Language
 import ru.raspberry.launcher.models.users.auth.Account
 import ru.raspberry.launcher.models.dtos.LauncherInfo
-import ru.raspberry.launcher.models.users.auth.AccountRepository
 import ru.raspberry.launcher.service.DiscordIntegration
 import ru.raspberry.launcher.service.LauncherServiceV1
 import ru.raspberry.launcher.service.MinecraftApiService
@@ -43,8 +42,8 @@ data class WindowData<S>(
     fun translation(key: String, default: String = ""): String {
         return language.get(key, default)
     }
-    val launcherService = LauncherServiceV1<S>(this)
-    val minecraftService = MinecraftApiService(AccountRepository(config))
+    val launcherService = LauncherServiceV1(this)
+    val minecraftService = MinecraftApiService(this)
 
     fun changeScreen(screen: S) {
         currentScreen.value = screen

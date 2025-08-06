@@ -14,6 +14,7 @@ enum class AuthSystem(
     val signOutUrl: String,
     val invalidateTokenUrl: String,
     val joinUrl: String,
+    val profileUrl: String,
     val skinUrl: String,
     val drawableResource: DrawableResource
 ) {
@@ -25,6 +26,7 @@ enum class AuthSystem(
         "https://authserver.ely.by/auth/signout",
         "https://authserver.ely.by/auth/invalidate",
         "https://authserver.ely.by/session/join",
+        "https://authserver.ely.by/session/profile/%s",
         "http://skinsystem.ely.by/skins/%s",
         Res.drawable.ely_by
     )

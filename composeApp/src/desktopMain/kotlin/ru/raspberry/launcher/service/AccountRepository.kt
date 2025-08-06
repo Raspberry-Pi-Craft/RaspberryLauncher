@@ -1,7 +1,10 @@
-package ru.raspberry.launcher.models.users.auth
+package ru.raspberry.launcher.service
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import ru.raspberry.launcher.models.Config
+import ru.raspberry.launcher.models.WindowData
+import ru.raspberry.launcher.models.users.auth.Account
+import ru.raspberry.launcher.models.users.auth.AuthSystem
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -13,16 +16,16 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-class AccountRepository {
+class AccountRepository<S> {
     private val cache: MutableList<Account> = mutableListOf()
-    private val config: Config
+    private val state: WindowData<S>
     private val filepath: File
-        get () = File(config.launcherDataPath + "/accounts.bin")
+        get () = File(state.config.launcherDataPath + "/accounts.bin")
     private var lastUpdate: Long
     constructor(
-        config: Config,
+        state: WindowData<S>,
     ) {
-        this.config = config
+        this.state = state
         lastUpdate = System.currentTimeMillis()
         load()
     }
@@ -42,13 +45,22 @@ class AccountRepository {
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(
                 Cipher.DECRYPT_MODE,
-                SecretKeySpec(Base64.getDecoder().decode(config.secret), "AES"),
+                SecretKeySpec(Base64.getDecoder().decode(state.config.secret), "AES"),
                 IvParameterSpec(iv)
             )
             data = cipher.doFinal(data)
 
             cache.clear()
-            cache.addAll(Json.decodeFromString<List<Account>>(String(data, Charsets.UTF_8)))
+            cache.addAll(
+                Json.decodeFromString<List<Account>>(String(data, Charsets.UTF_8)).mapNotNull {
+                    val profile = runBlocking {
+                        state.minecraftService.getProfileById(it.authSystem, it.id)
+                    }
+                    if (profile == null) null else it.copy(
+                        username = profile.name
+                    )
+                }
+            )
         }
         catch (e: BadPaddingException) {
             println(e.message)
@@ -62,7 +74,7 @@ class AccountRepository {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(
             Cipher.ENCRYPT_MODE,
-            SecretKeySpec(Base64.getDecoder().decode(config.secret), "AES"),
+            SecretKeySpec(Base64.getDecoder().decode(state.config.secret), "AES"),
             IvParameterSpec(iv)
         )
         val encryptedBytes = cipher.doFinal(data.toByteArray(Charsets.UTF_8))

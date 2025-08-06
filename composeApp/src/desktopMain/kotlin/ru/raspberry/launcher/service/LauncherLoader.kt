@@ -20,7 +20,6 @@ import kotlinx.serialization.json.Json
 import ru.raspberry.launcher.AppConfig
 import ru.raspberry.launcher.models.OS
 import ru.raspberry.launcher.models.WindowData
-import ru.raspberry.launcher.models.users.auth.AccountRepository
 import ru.raspberry.launcher.models.dtos.ApiInfo
 import ru.raspberry.launcher.models.dtos.LauncherInfo
 import ru.raspberry.launcher.tools.runCommand
@@ -146,9 +145,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
 
             value = 0.7f
             text.value = state.translation("loading.account", "Loading accounts...")
-            val repo = AccountRepository(
-                config = state.config,
-            )
+            val repo = AccountRepository(state)
             val meta = repo.getMeta()
             value = 0.8f
             if (meta.isEmpty()) {
@@ -198,7 +195,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                         "Active account token verification error!"
                     )
                     state.config.activeAccountId = -1
-                    AccountRepository(state.config).remove(account)
+                    AccountRepository(state).remove(account)
                 }
                 delay(1000)
             }
