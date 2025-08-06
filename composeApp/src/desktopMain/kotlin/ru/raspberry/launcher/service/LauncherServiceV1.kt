@@ -376,7 +376,7 @@ class LauncherServiceV1<S>(
     // =====================================================
     suspend fun releaseNewLauncherVersion(dto: LauncherInfo) : HttpResponse {
         val response = client.patch(
-            urlString = "${state.config.host}/api/v1/info/launcher"
+            urlString = "${state.config.host}/api/info/launcher"
         ) {
             contentType(ContentType.Application.Json)
             setBody(dto)

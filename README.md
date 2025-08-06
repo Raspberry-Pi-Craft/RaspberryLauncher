@@ -1,4 +1,6 @@
-Temurin:
-https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jre_x64_windows_hotspot_17.0.15_6.zip
-https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jre_x64_linux_hotspot_17.0.15_6.tar.gz
-https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jre_x64_mac_hotspot_17.0.15_6.tar.gz
+# Raspberry Launcher
+Новый метод доступа к серверам Raspberry(Pi) Craft.
+Raspberry Launcher позволяет еще более упростить процесс входа на сервер, заменяя старый метод через Raspberry Mod.
+## Установка
+1. Скачайте последнюю версию Raspberry Launcher с [GitHub](https://github.com/Raspberry-Pi-Craft/RaspberryLauncher/releases/latest)
+2. Запустите установщик и следуйте инструкциям на экране.
