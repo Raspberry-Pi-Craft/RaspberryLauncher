@@ -17,7 +17,7 @@ jobs:
 
       - name: Create tokens.yaml from secret
         run: |
-          echo "${{ secrets.TOKENS_YAML_B64 }}" | base64 --decode > tokens.yaml
+          echo "${{ secrets.TOKENS_YAML }}" | base64 --decode > tokens.yaml
           chmod 600 tokens.yaml
 
       - name: Make gradlew executable
@@ -52,7 +52,7 @@ jobs:
 
       - name: Create tokens.yaml from secret
         run: |
-          echo "${{ secrets.TOKENS_YAML_B64 }}" | base64 --decode > tokens.yaml
+          echo "${{ secrets.TOKENS_YAML }}" | base64 --decode > tokens.yaml
           chmod 600 tokens.yaml
 
       - name: Make gradlew executable
@@ -88,7 +88,7 @@ jobs:
       - name: Create tokens.yaml from secret (Windows)
         shell: pwsh
         run: |
-          $b64 = "${{ secrets.TOKENS_YAML_B64 }}"
+          $b64 = "${{ secrets.TOKENS_YAML }}"
           [System.IO.File]::WriteAllBytes("tokens.yaml", [System.Convert]::FromBase64String($b64))
 
       - name: Build .msi
