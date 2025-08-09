@@ -9,7 +9,7 @@ import java.util.Base64
 
 @Serializable
 data class Config(
-    var host: String = "https://launcher.rellomine.ru",
+    var host: String = "https://raspberry.rellomine.ru",
     var minecraftPath: String = ".minecraft",
     var launcherDataPath: String = System.getProperty("compose.application.resources.dir") ?: "data",
     val secret: String = Base64.getEncoder().encodeToString(ByteArray(16).apply {
