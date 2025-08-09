@@ -263,7 +263,7 @@ class GameLoader(
             installAssets(assetsDir, gameDir, force)
             installFiles(gameDir, force)
             generateServerConfig(gameDir)
-            launchGame(workingDir)
+            launchGame(gameDir)
         } catch (e: MinecraftException) {
             println(e)
             error(
@@ -914,7 +914,6 @@ class GameLoader(
             println(e)
         }
     }
-
 }
 
 @Serializable
