@@ -13,11 +13,16 @@ fun String.runCommand(
 ) : Process? = runCatching {
     val builder = ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start().also { it.waitFor(timeoutAmount, timeoutUnit) }
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun String.runCommandWithoutTimeout(
@@ -27,11 +32,16 @@ fun String.runCommandWithoutTimeout(
 ) : Process? = runCatching {
     val builder = ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start()
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun String.runCommandWithResult(
@@ -43,11 +53,16 @@ fun String.runCommandWithResult(
 ): String? = runCatching {
     val builder = ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start().also { it.waitFor(timeoutAmount, timeoutUnit) }
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
         .inputStream.bufferedReader().readText()
 }.onFailure { it.printStackTrace() }.getOrNull()
 
@@ -60,11 +75,16 @@ fun List<String>.runCommand(
 ) : Process? = runCatching {
     val builder = ProcessBuilder(this)
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start().also { it.waitFor(timeoutAmount, timeoutUnit) }
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun List<String>.runCommandWithoutTimeout(
@@ -74,11 +94,16 @@ fun List<String>.runCommandWithoutTimeout(
 ) : Process? = runCatching {
     val builder = ProcessBuilder(this)
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start()
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun List<String>.runCommandWithResult(
@@ -90,10 +115,15 @@ fun List<String>.runCommandWithResult(
 ): String? = runCatching {
     val builder = ProcessBuilder(this)
         .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    builder.start().also { it.waitFor(timeoutAmount, timeoutUnit) }
+    val process = builder.start()
+    Thread {
+        process.inputStream.bufferedReader().useLines { lines ->
+            lines.forEach { line -> println(line) }
+        }
+    }.start()
+    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
         .inputStream.bufferedReader().readText()
 }.onFailure { it.printStackTrace() }.getOrNull()

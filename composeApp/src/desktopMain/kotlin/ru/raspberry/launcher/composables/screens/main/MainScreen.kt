@@ -50,6 +50,7 @@ import ru.raspberry.launcher.theme.AppTheme
 import ru.raspberry.launcher.windows.MainWindowScreens
 import ru.raspberry.launcher.windows.dialogs.AccountsDialog
 import ru.raspberry.launcher.windows.dialogs.AuthDialog
+import ru.raspberry.launcher.windows.LogDialog
 import ru.raspberry.launcher.windows.dialogs.SettingsDialog
 import ru.raspberry.launcher.windows.dialogs.admin.CRUDAbstractDialog
 import ru.raspberry.launcher.windows.dialogs.admin.ToolsDialog
@@ -93,6 +94,7 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
             "Looking..."
         )
     }
+    var displayLog by remember { mutableStateOf(false) }
     var dialogType by remember { mutableStateOf(DialogType.None) }
     var errorDialogTitle by remember { mutableStateOf<@Composable () -> Unit>({}) }
     var errorDialogText by remember { mutableStateOf<@Composable () -> Unit>({ }) }
@@ -209,6 +211,16 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                             painter = painterResource(Res.drawable.reload),
                             modifier = Modifier.size(24.dp),
                             contentDescription = "Reload"
+                        )
+                    }
+                    IconButton(
+                        onClick = { displayLog = !displayLog },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.logs),
+                            modifier = Modifier.size(24.dp),
+                            contentDescription = "Logs"
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
@@ -533,5 +545,6 @@ fun WindowScope.MainScreen(state: WindowData<MainWindowScreens>) {
                     }),
                 )
         }
+        if (displayLog) LogDialog(state, close = { displayLog = false })
     }
 }

@@ -245,11 +245,11 @@ class GameLoader(
             if (!minecraftDir.exists() && !minecraftDir.mkdirs())
                 throw MinecraftException("Failed to create Minecraft directory: ${minecraftDir.absolutePath}")
 
-            replacements["library_directory"] = librariesDir.relativeTo(workingDir).path
-            replacements["game_libraries_directory"] = librariesDir.relativeTo(workingDir).path
-            replacements["game_directory"] = gameDir.relativeTo(workingDir).path
-            replacements["assets_root"] = assetsDir.relativeTo(workingDir).path
-            replacements["natives_directory"] = minecraftNativesDir.relativeTo(workingDir).path
+            replacements["library_directory"] = librariesDir.relativeTo(gameDir).path
+            replacements["game_libraries_directory"] = librariesDir.relativeTo(gameDir).path
+            replacements["game_directory"] = gameDir.relativeTo(gameDir).path
+            replacements["assets_root"] = assetsDir.relativeTo(gameDir).path
+            replacements["natives_directory"] = minecraftNativesDir.relativeTo(gameDir).path
             val freeSpace: Long = File(state.config.minecraftPath).usableSpace
             if (freeSpace > 0 && freeSpace < 1024L * 64L) {
                 throw MinecraftException(

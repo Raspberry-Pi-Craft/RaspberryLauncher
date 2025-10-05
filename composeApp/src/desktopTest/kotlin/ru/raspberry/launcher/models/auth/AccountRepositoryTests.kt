@@ -26,7 +26,7 @@ class AccountRepositoryTests {
         themes = emptyMap(),
         languages = emptyMap(),
         recompose = {},
-        os = OS.Windows
+        os = OS.Windows,
     )
 
 

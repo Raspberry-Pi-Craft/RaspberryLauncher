@@ -1,6 +1,7 @@
 package ru.raspberry.launcher.windows
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,9 +29,8 @@ import ru.raspberry.launcher.theme.Theme
 import ru.raspberry.launcher.tools.jna.JNA
 import ru.raspberry.launcher.tools.roundCorners
 import java.io.File
+import java.util.function.Supplier
 import kotlin.concurrent.thread
-import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.minutes
 
 enum class MainWindowScreens {
@@ -108,7 +108,7 @@ fun MainWindow(
     }
     println("Current OS: ${state.os} Arch: ${JNA.arch}")
     remember {
-        thread {
+        Thread {
             runBlocking {
                 while (true) {
                     state.launcherService.refresh()
@@ -116,7 +116,7 @@ fun MainWindow(
                     delay(30.minutes)
                 }
             }
-        }
+        }.start()
     }
     Window(
         state = windowState,
