@@ -22,11 +22,10 @@ import ru.raspberry.launcher.models.OS
 import ru.raspberry.launcher.models.WindowData
 import ru.raspberry.launcher.models.dtos.ApiInfo
 import ru.raspberry.launcher.models.dtos.LauncherInfo
-import ru.raspberry.launcher.tools.runCommand
+import ru.raspberry.launcher.tools.runCommandWithoutWait
 import ru.raspberry.launcher.windows.MainWindowScreens
 import java.io.File
 import java.nio.file.Files
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
@@ -64,7 +63,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                 value = 0.25f
                 val info = response.body<LauncherInfo>()
                 state.launcherInfo = info
-                if (info.version != AppConfig.version) {
+                if (state.config.autoCheckForUpdates && info.version != AppConfig.version) {
                     text.value = state.translation("loading.launcher.success.old", "Loading update...")
                     val command: String
                     val format: String
@@ -107,11 +106,7 @@ class LauncherLoader(private val text: MutableState<String>, private val state: 
                     dir.mkdirs()
                     val file = dir.resolve("RaspberryLauncher$format")
                     file.writeBytes(response.readRawBytes())
-                    command.runCommand(
-                        workingDir = dir,
-                        timeoutAmount = 10,
-                        timeoutUnit = TimeUnit.MINUTES
-                    )
+                    command.runCommandWithoutWait(workingDir = dir)
                     exitProcess(0)
                 }
                 else

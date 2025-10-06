@@ -88,7 +88,7 @@ kotlin {
     }
 }
 
-val appVersion = "1.2.0"
+val appVersion = "1.3.0"
 buildkonfig {
     packageName = "ru.raspberry.launcher"
     objectName = "AppConfig"

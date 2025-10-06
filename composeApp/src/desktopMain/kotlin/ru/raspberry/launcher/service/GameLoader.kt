@@ -52,7 +52,7 @@ import ru.raspberry.launcher.tools.jna.JNA
 import ru.raspberry.launcher.tools.jna.JNAException
 import ru.raspberry.launcher.tools.jna.JNAWindows
 import ru.raspberry.launcher.tools.pathsFromJson
-import ru.raspberry.launcher.tools.runCommandWithoutTimeout
+import ru.raspberry.launcher.tools.runCommandWithoutWait
 import ru.raspberry.launcher.windows.MainWindowScreens
 import java.io.File
 import java.io.FileOutputStream
@@ -684,7 +684,7 @@ class GameLoader(
             command.forEach { println(it) }
         }
 
-        val process = command.runCommandWithoutTimeout(
+        val process = command.runCommandWithoutWait(
             hooks = hooks,
             workingDir = workingDir
         )

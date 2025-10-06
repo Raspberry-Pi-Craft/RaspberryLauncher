@@ -24,7 +24,9 @@ data class Config(
     var language: String = "ru",
     var debug: Boolean = false,
     var richPresence: Boolean = false,
+    var autoCheckForUpdates: Boolean = true,
 ) {
+
     fun save() {
         val configFile = File("config.json")
         configFile.writeText(GoodJson.encodeToString(serializer(), this))

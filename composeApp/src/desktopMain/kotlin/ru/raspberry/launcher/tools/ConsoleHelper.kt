@@ -16,16 +16,17 @@ fun String.runCommand(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+        it.waitFor(timeoutAmount, timeoutUnit)
+    }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
-fun String.runCommandWithoutTimeout(
+fun String.runCommandWithoutWait(
     workingDir: File = File("."),
     env : Map<String, String> = emptyMap(),
     hooks: List<(ProcessBuilder) -> Unit> = emptyList(),
@@ -35,13 +36,13 @@ fun String.runCommandWithoutTimeout(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+    }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun String.runCommandWithResult(
@@ -56,14 +57,14 @@ fun String.runCommandWithResult(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
-        .inputStream.bufferedReader().readText()
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+        it.waitFor(timeoutAmount, timeoutUnit)
+    }.inputStream.bufferedReader().readText()
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun List<String>.runCommand(
@@ -78,16 +79,17 @@ fun List<String>.runCommand(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+        it.waitFor(timeoutAmount, timeoutUnit)
+    }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
-fun List<String>.runCommandWithoutTimeout(
+fun List<String>.runCommandWithoutWait(
     workingDir: File = File("."),
     env : Map<String, String> = emptyMap(),
     hooks: List<(ProcessBuilder) -> Unit> = emptyList(),
@@ -97,13 +99,13 @@ fun List<String>.runCommandWithoutTimeout(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+    }
 }.onFailure { it.printStackTrace() }.getOrNull()
 
 fun List<String>.runCommandWithResult(
@@ -118,12 +120,12 @@ fun List<String>.runCommandWithResult(
         .redirectErrorStream(true)
     builder.environment().putAll(env)
     hooks.forEach { it(builder) }
-    val process = builder.start()
-    Thread {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { line -> println(line) }
-        }
-    }.start()
-    process.also { it.waitFor(timeoutAmount, timeoutUnit) }
-        .inputStream.bufferedReader().readText()
+    builder.start().also {
+        Thread {
+            it.inputStream.bufferedReader().useLines { lines ->
+                lines.forEach { line -> println(line) }
+            }
+        }.start()
+        it.waitFor(timeoutAmount, timeoutUnit)
+    }.inputStream.bufferedReader().readText()
 }.onFailure { it.printStackTrace() }.getOrNull()
