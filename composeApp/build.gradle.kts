@@ -88,7 +88,7 @@ kotlin {
     }
 }
 
-val appVersion = "1.3.0"
+val appVersion = "1.3.1"
 buildkonfig {
     packageName = "ru.raspberry.launcher"
     objectName = "AppConfig"
@@ -105,12 +105,21 @@ compose.desktop {
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Raspberry Launcher"
             packageVersion = appVersion
+
+            description = "Raspberry(Pi)Craft Minecraft Launcher"
             vendor = "Raspberry(Pi)Craft"
+            copyright = "© 2025 Raspberry(Pi)Craft"
+
             macOS {
                 iconFile.set(project.layout.projectDirectory.file("icons/icon.icns"))
             }
             windows {
                 iconFile.set(project.layout.projectDirectory.file("icons/icon.ico"))
+                dirChooser = true
+                perUserInstall = true
+                shortcut = true
+                menu = true
+                menuGroup = "Raspberry(Pi)Craft"
             }
             linux {
                 iconFile.set(project.layout.projectDirectory.file("icons/icon.png"))
